@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Linux on 河马的池塘</title>
+    <link>http://pool.idyi.net/categories/linux/index.xml</link>
+    <description>Recent content in Linux on 河马的池塘</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <copyright>Copyright (c) 2017, Hippo; all rights reserved.</copyright>
+    <atom:link href="http://pool.idyi.net/categories/linux/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Hello world</title>
+      <link>http://pool.idyi.net/2017/03/hello-world/</link>
+      <pubDate>Thu, 16 Mar 2017 11:14:25 +0800</pubDate>
+      
+      <guid>http://pool.idyi.net/2017/03/hello-world/</guid>
+      <description>
+
+&lt;h2 id=&#34;这是我的第一篇博客&#34;&gt;这是我的第一篇博客&lt;/h2&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
