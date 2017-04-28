@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>postgresql role(角色)</title>
+<meta name="description" content="河马的笔记">
+<meta name="generator" content="Hugo 0.20.5" />
+<meta property="og:title" content="postgresql role(角色)" />
+<meta property="og:description" content="在PG中,用户是通过role来表示的.role也可以表示成一组用户.
+角色与用户的概念比较模糊,可以认为带LOGIN属性的role就是用户.
+
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://pool.idyi.net/2015/02/postgresql-role%E8%A7%92%E8%89%B2/" />
+
+
+
+<meta property="article:published_time" content="2015-02-09T16:17:00&#43;08:00"/>
+<meta property="article:modified_time" content="2015-02-09T16:17:00&#43;08:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<link rel="dns-prefetch" href="//fonts.googleapis.com" />
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700" type="text/css" media="all" />
+<link rel="stylesheet" href="http://pool.idyi.netcss/style.css" type="text/css" media="all" />
+<script type="text/javascript" src="http://pool.idyi.netjs/scripts.js"></script>
+</head>
+<body class="body body-right-sidebar mobile" itemscope="itemscope" itemtype="http://schema.org/WebPage">
+	<div class="container container-outer">
+		<header class="header" itemscope="itemscope" itemtype="http://schema.org/WPHeader">
+			<div class="container container-inner clearfix">
+				<div class="logo" role="banner" itemscope="itemscope" itemtype="http://schema.org/Brand">
+					<a class="logo__link" href="http://pool.idyi.net" title="河马的池塘" rel="home">
+						<h1 class="logo__title">河马的池塘</h1>
+						<h2 class="logo__tagline">一些技术笔记</h2>
+					</a>
+				</div>
+			</div>
+			<nav class="menu" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<ul class="menu__list">
+		<li class="menu__item "><a class="menu__link" href="http://pool.idyi.net/about">ABOUT ME</a></li>
+	</ul>
+</nav>
+		</header>
+		<div class="wrapper clearfix">
+
+<div class="main-content content" role="main" itemprop="mainContentOfPage">
+	<article class="post">
+		<header class="post__header clearfix">
+			<h1 class="post__title">postgresql role(角色)</h1>
+			<p class="post__meta meta">
+				<svg class="icon icon-time" height="14" viewBox="0 0 16 16" width="14" xmlns="http://www.w3.org/2000/svg"><path d="m8-.0000003c-4.4 0-8 3.6-8 8 0 4.4000003 3.6 8.0000003 8 8.0000003 4.4 0 8-3.6 8-8.0000003 0-4.4-3.6-8-8-8zm0 14.4000003c-3.52 0-6.4-2.88-6.4-6.4000003 0-3.52 2.88-6.4 6.4-6.4 3.52 0 6.4 2.88 6.4 6.4 0 3.5200003-2.88 6.4000003-6.4 6.4000003zm.4-10.4000003h-1.2v4.8l4.16 2.5600003.64-1.04-3.6-2.1600003z"/></svg>
+				<time class="post__meta-date" datetime="2015-02-09 16:17:00 &#43;0800 CST">February 09, 2015</time>
+				<span class="post__meta-categories meta-categories">
+					<svg class="icon icon-category" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m7 2l1 2h8v11h-16v-13z"/></svg>
+					<a class="meta-categories__link" href="http://pool.idyi.net/categories/postgresql" rel="category">postgresql</a></span>
+			</p>
+		</header>
+		<div class="post__content clearfix">
+			<p>在PG中,用户是通过role来表示的.role也可以表示成一组用户.
+角色与用户的概念比较模糊,可以认为带LOGIN属性的role就是用户.</p>
+
+<p></p>
+
+<h2 id="创建role">创建role</h2>
+
+<p><strong>带了login属性.就可以登录数据库.</strong></p>
+
+<pre><code>postgres=# create role role1;
+CREATE ROLE
+postgres=# \c - role1
+FATAL:  role &quot;role1&quot; is not permitted to log in
+Previous connection kept
+postgres=# alter role role1 login;
+ALTER ROLE
+postgres=# \c - role1
+You are now connected to database &quot;postgres&quot; as user &quot;role1&quot;.
+</code></pre>
+
+<blockquote>
+<p>create user role1 与create role role1 login 是等价的,避免混淆,我只记create role方式.</p>
+</blockquote>
+
+<p>role的系统视图是pg_roles</p>
+
+<pre><code>postgres=&gt; select rolname,rolsuper,rolcanlogin from pg_roles;
+ rolname  | rolsuper | rolcanlogin
+----------+----------+-------------
+ postgres | t        | t
+ hippo    | f        | t
+ user2    | f        | t
+ user1    | t        | t
+ role1    | f        | t
+</code></pre>
+
+<p>在使用initdb初始化cluster时,默认会创建一个superuser,名字是将执行initdb命令的操作系统用户一样的用户,通常叫postgres</p>
+
+<p>命令行工具如psql,pg_dump等都需要指定连接用户及连接数据库.默认用户是操作系统用户,默认数据库名字跟连接用户名保持一致.</p>
+
+<p><strong>指定数据库名字</strong></p>
+
+<pre><code>[postgres@fnddb ~]$ psql -d database1
+psql (9.4.1)
+Type &quot;help&quot; for help.
+
+database1=# \c
+You are now connected to database &quot;database1&quot; as user &quot;postgres&quot;.
+</code></pre>
+
+<p><strong>指定用户名</strong></p>
+
+<pre><code>[postgres@fnddb ~]$ psql -U role1 --不指定数据库名字,默认数据库跟用户名一致,所以找不到
+psql: FATAL:  database &quot;role1&quot; does not exist
+</code></pre>
+
+<h2 id="role属性">role属性</h2>
+
+<p>可以认为是这个用户所具有的系统权限.</p>
+
+<ul>
+<li>LOGIN &ndash;具有登录权限</li>
+<li>SUPERUSER &ndash;超级用户,具有所有系统权限,除了登录验证</li>
+<li>CREATEDB &ndash;创建数据库权限</li>
+<li>CREATEROLE &ndash;创建role权限</li>
+<li>PASSWORD &ndash;设置密码</li>
+</ul>
+
+<p><strong>修改属性</strong></p>
+
+<pre><code>postgres=# create role role2 login;
+CREATE ROLE
+
+postgres=# select * from pg_user where usename = 'role2';
+ usename | usesysid | usecreatedb | usesuper | usecatupd | userepl |  passwd  | valuntil | useconfig
+---------+----------+-------------+----------+-----------+---------+----------+----------+-----------
+ role2   |    16494 | f           | f        | f         | f       | ******** |          |
+(1 row)
+
+postgres=# alter role role2 createdb createrole password 'rolepasswd';
+ALTER ROLE
+postgres=# \du role2
+                 List of roles
+ Role name |       Attributes       | Member of
+-----------+------------------------+-----------
+ role2     | Create role, Create DB | {}
+
+postgres=# alter role role2 nocreatedb nocreaterole superuser;
+ALTER ROLE
+postgres=# \du role2
+           List of roles
+ Role name | Attributes | Member of
+-----------+------------+-----------
+ role2     | Superuser  | {}
+</code></pre>
+
+<h2 id="role的参数">role的参数</h2>
+
+<p>可以修改用户的参数,来影响某用户操作数据库的特殊行为.这部分在讲服务器参数修改时已提及.</p>
+
+<pre><code>postgres=# alter role role2 set enable_indexscan = f;
+ALTER ROLE
+</code></pre>
+
+<h2 id="role-membership-role-成员">role membership(role 成员)</h2>
+
+<p>为了管理上的方便,我们可以创建一个role group,然后可以将各用户或者有特殊权限的role组织在一起,各个role就是这个role group的membership.
+role group 是不带login的role,因为pg使用role来表示所有的角色,用户,用户组,所以不要混淆,创建语句都是create role.我们来测试一下.</p>
+
+<p><strong>我们创建一个用户,两个角色,分别有直属一个表的查询权限</strong></p>
+
+<pre><code>postgres=# create role jack login inherit;
+CREATE ROLE
+postgres=# create role r1;
+CREATE ROLE
+postgres=# create role r2;
+CREATE ROLE
+postgres=# \c database1
+You are now connected to database &quot;database1&quot; as user &quot;postgres&quot;.
+database1=# create table tab1(id text);
+CREATE TABLE
+database1=# create table tab2(id text);
+CREATE TABLE
+database1=# create table tab3 (id text);
+CREATE TABLE
+database1=# grant select on tab1 to r1;
+GRANT
+database1=# grant select on tab2 to r2;
+GRANT
+database1=# grant select on tab3 to jack;
+GRANT
+</code></pre>
+
+<p><strong>进行grant授权,使jack成为r1,r2的membership</strong></p>
+
+<pre><code>database1=# grant r1 to jack;
+GRANT ROLE
+database1=# grant r2 to jack;
+GRANT ROLE
+database1=# grant usage on schema public to public; --授权usage给所有用户(后一个public),否则看不到数据库中的表.
+GRANT
+</code></pre>
+
+<p><strong>测试角色切换</strong></p>
+
+<p><em>jack继承了r1,r2的权限</em></p>
+
+<pre><code>database1=# \c - jack
+You are now connected to database &quot;database1&quot; as user &quot;jack&quot;.
+database1=&gt; select * from tab3;
+ id
+----
+(0 rows)
+
+database1=&gt; select * from tab1;
+ id
+----
+(0 rows)
+
+database1=&gt; select * from tab2;
+ id
+----
+(0 rows)
+</code></pre>
+
+<p><em>间接继承的也可以</em></p>
+
+<pre><code>database1=&gt; \c - postgres
+You are now connected to database &quot;database1&quot; as user &quot;postgres&quot;.
+database1=# revoke r2 from jack;
+REVOKE ROLE
+database1=# grant r2 to r1;
+GRANT ROLE
+database1=# \c - jack;
+You are now connected to database &quot;database1&quot; as user &quot;jack&quot;.
+database1=&gt; select * from tab2;
+ id
+----
+(0 rows)
+</code></pre>
+
+<p><em>关闭r1的继承</em></p>
+
+<pre><code>database1=&gt; \c - postgres
+You are now connected to database &quot;database1&quot; as user &quot;postgres&quot;.
+database1=# alter role r1 noinherit;
+ALTER ROLE
+database1=# \c - jack;
+You are now connected to database &quot;database1&quot; as user &quot;jack&quot;.
+database1=&gt; select * from tab2; --已经查询不了r2的权限
+ERROR:  permission denied for relation tab2
+database1=&gt; select * from tab1;
+ id
+----
+(0 rows)
+</code></pre>
+
+<p><em>直接切换到r2角色,你已经不是jack了:)</em></p>
+
+<pre><code>database1=&gt; set role r1;
+SET
+database1=&gt; select * from tab1;
+ id
+----
+(0 rows)
+
+database1=&gt; select * from tab2;
+ERROR:  permission denied for relation tab2
+database1=&gt; select * from tab3;
+ERROR:  permission denied for relation tab3
+</code></pre>
+
+<p><em>授权不能形成回路</em></p>
+
+<pre><code>database1=&gt; \c - postgres
+You are now connected to database &quot;database1&quot; as user &quot;postgres&quot;.
+database1=# \du
+                             List of roles
+ Role name |                   Attributes                   | Member of
+-----------+------------------------------------------------+-----------
+ hippo     |                                                | {}
+ jack      |                                                | {r1}
+ postgres  | Superuser, Create role, Create DB, Replication | {}
+ r1        | No inheritance, Cannot login                   | {r2}
+ r2        | Cannot login                                   | {}
+ user1     | Superuser, Create role, Create DB              | {}
+ user2     | Create DB                                      | {}
+
+database1=# grant jack to r2;
+ERROR:  role &quot;jack&quot; is a member of role &quot;r2&quot;
+</code></pre>
+
+<p><em>系统权限任何时候都不会继承,只有主动set过去才生效</em></p>
+
+<pre><code>database1=# alter role r1 createrole;
+ALTER ROLE
+database1=# \c - jack;
+You are now connected to database &quot;database1&quot; as user &quot;jack&quot;.
+database1=&gt; create role jacktest1;
+ERROR:  permission denied to create role
+database1=&gt; set role r1;
+SET
+database1=&gt; create role jacktest1;
+CREATE ROLE
+</code></pre>
+
+<p><em>三种方式还原到最初的jack角色</em></p>
+
+<pre><code>database1=&gt; set role jack;
+SET
+database1=&gt; set role none;
+SET
+database1=&gt; reset role;
+RESET
+</code></pre>
+
+<h2 id="角色删除">角色删除</h2>
+
+<p><em>在什么角色下建的对象,归属于哪个角色,而非登录者</em></p>
+
+<pre><code>database1=&gt; \c - postgres
+You are now connected to database &quot;database1&quot; as user &quot;postgres&quot;.
+database1=# grant create on database database1 to r1;
+GRANT
+database1=# \c - jack
+You are now connected to database &quot;database1&quot; as user &quot;jack&quot;.
+database1=&gt; set role r1;
+SET
+database1=&gt; create table tab4(id text);
+CREATE TABLE
+database1=&gt; \dt tab4    --这里要注意:owner变成了r1而不是jack
+       List of relations
+ Schema | Name | Type  | Owner
+--------+------+-------+-------
+ public | tab4 | table | r1
+(1 row)
+</code></pre>
+
+<p><em>删除role,role下有权限或者是对象属于此role,则删除不了</em></p>
+
+<pre><code>database1=&gt; \c - postgres
+You are now connected to database &quot;database1&quot; as user &quot;postgres&quot;.
+database1=# drop role r1;
+ERROR:  role &quot;r1&quot; cannot be dropped because some objects depend on it
+DETAIL:  owner of table tab4
+privileges for database database1
+privileges for table tab1
+</code></pre>
+
+<p><em>移除掉相关权限关联后进行删除</em></p>
+
+<pre><code>database1=# drop table tab1;
+DROP TABLE
+database1=# drop table tab4;
+DROP TABLE
+database1=# revoke create on database database1 from r1;
+REVOKE
+database1=# drop role r1;
+DROP ROLE
+</code></pre>
+
+<p><em>涉及到r1的成员或者是角色租(role group) 自动释放</em></p>
+
+<pre><code>atabase1=# \du
+                            List of roles
+Role name |                   Attributes                   | Member of
+----------+------------------------------------------------+-----------
+hippo     |                                                | {}
+jack      |                                                | {}
+jacktest1 | Cannot login                                   | {}
+postgres  | Superuser, Create role, Create DB, Replication | {}
+r2        | Cannot login                                   | {}
+user1     | Superuser, Create role, Create DB              | {}
+user2     | Create DB                                      | {}
+</code></pre>
+
+<h2 id="role总结">ROLE总结</h2>
+
+<ol>
+<li>PG中的role包含了用户,角色,角色组,成员等所有含义.都使用create role来创建.</li>
+<li>一个role可以成为多个role的成员,根据role的inherit属性来决定是否集成其他role的各种权限</li>
+<li>继承关系不能形成回路.</li>
+<li>role上的属性如createdb,createrole不会直接继承,需要显式通过set role切换过去.</li>
+<li>删除role需要先清理此role关联的各种权限.</li>
+</ol>
+
+<p>//END</p>
+		</div>
+		
+<div class="post__tags tags clearfix">
+	<svg class="icon icon-tag" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="m4.73135 3.3795002q0-.5597-.39604-.9557-.39604-.3961-.95577-.3961-.55974 0-.95578.3961-.39604.396-.39604.9557 0 .5598.39604.9558.39604.3961.95578.3961.55973 0 .95577-.3961.39604-.396.39604-.9558zm11.26865 6.0832q0 .5596998-.39076.9504998l-5.18548 5.196q-.41188.3908-.9610504.3908-.55974 0-.9505-.3908l-7.5511496-7.5616998q-.40132-.3907-.68119-1.0666-.27987-.6759-.27987-1.2357v-4.3934q0-.54920004.40132-.95050004.40132-.4013.9505-.4013h4.39339q.55974 0 1.23565.2799.67591.2798 1.07723.6812l7.55115 7.54060004q.39076.4118.39076.961z"/></svg>
+	<ul class="tags__list">
+		<li class="tags__item"><a class="tags__link" href="http://pool.idyi.net/tags/role/" rel="tag">role</a></li>
+	</ul>
+</div>
+
+	</article>
+	
+<div class="authorbox clearfix">
+	<figure class="authorbox__avatar">
+		<img alt="Hippo avatar" src="http://pool.idyi.net/img/avatar.jpg" class="avatar" height="90" width="90">
+	</figure>
+	<div class="authorbox__header">
+		<span class="authorbox__name">About Hippo</span>
+	</div>
+	<div class="authorbox__description">
+		Hippo&#39;s true identity is unknown. Maybe he is a successful blogger or writer. Nobody knows it.
+	</div>
+</div>
+	
+<nav class="post-nav row clearfix" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<div class="post-nav__item post-nav__item--prev col-1-2">
+		<a class="post-nav__link" href="http://pool.idyi.net/2015/02/postgresql%E5%8D%87%E7%BA%A7-%E5%B0%8F%E7%89%88%E6%9C%AC%E5%8F%B7%E5%8D%87%E7%BA%A7/" rel="prev"><span class="post-nav__caption">«Previous</span><p class="post-nav__post-title">postgresql升级-小版本号升级</p></a>
+	</div>
+	<div class="post-nav__item post-nav__item--next col-1-2">
+		<a class="post-nav__link" href="http://pool.idyi.net/2015/02/postgresql%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E4%B9%8Bsql-dump/" rel="next"><span class="post-nav__caption">Next»</span><p class="post-nav__post-title">postgresql备份与恢复之SQL Dump</p></a>
+	</div>
+</nav>
+
+	
+<div class="comments">
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'hippool';
+    var disqus_identifier = 'http:\/\/pool.idyi.net\/2015\/02\/postgresql-role%E8%A7%92%E8%89%B2\/';
+    var disqus_title = 'postgresql role(角色)';
+    var disqus_url = 'http:\/\/pool.idyi.net\/2015\/02\/postgresql-role%E8%A7%92%E8%89%B2\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+</div>
+
+<aside class="sidebar" itemscope="itemscope" itemtype="http://schema.org/WPSideBar">
+	
+<div class="widget-search widget">
+	<form class="widget-search__form" role="search" method="get" action="//google.com/search">
+		<label>
+			<span class="screen-reader-text">Search for:</span>
+			<input class="widget-search__field" type="search" placeholder="SEARCH..." value="" name="q">
+		</label>
+		<input class="widget-search__submit" type="submit" value="Search">
+		<input type="hidden" name="sitesearch" value="http://pool.idyi.net" />
+	</form>
+</div>
+	
+<div class="widget-recent widget">
+	<h4 class="widget__title">Recent Posts</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph%E5%AE%89%E8%A3%85%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98/">ceph安装中遇到的问题</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph-%E5%AE%89%E8%A3%85/">ceph 安装</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph-%E5%AE%89%E8%A3%85%E5%89%8D%E7%9A%84%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C/">ceph 安装前的准备工作</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/02/networkmanager%E9%85%8D%E7%BD%AE%E7%BD%91%E7%BB%9Cteam/">NetworkManager配置网络team</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/06/docker-registry-%E5%AD%98%E5%82%A8%E5%88%B0aliyun-oss/">Docker registry 存储到aliyun oss</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/06/docker-registry/">Docker registry</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/%E4%BD%BF%E7%94%A8letsencrypt/">使用letsencrypt</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/docker-daemon%E7%9A%84http-socket-tls%E5%8A%A0%E5%AF%86%E8%BF%9E%E6%8E%A5/">docker daemon的HTTP socket TLS加密连接</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/docker%E7%9A%84devicemapper-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">docker的devicemapper 最佳实践</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/docker%E9%80%89%E6%8B%A9%E5%AD%98%E5%82%A8%E9%A9%B1%E5%8A%A8%E5%99%A8/">docker选择存储驱动器</a></li>
+		</ul>
+	</div>
+</div>
+
+	
+<div class="widget-categories widget">
+	<h4 class="widget__title">Categories</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/ceph">Ceph</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/docker">Docker</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/java">Java</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/linux">Linux</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/macos">Macos</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/mysql">Mysql</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/oracle">Oracle</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/other">Other</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/postgresql">Postgresql</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/python">Python</a></li>
+		</ul>
+	</div>
+</div>
+	
+<div class="widget-taglist widget">
+	<h4 class="widget__title">Tags</h4>
+	<div class="widget__content">
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/aliyun-oss" title="aliyun-oss">aliyun-oss</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/array" title="array">array</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/backup" title="backup">backup</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/bond" title="bond">bond</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/ceph" title="ceph">ceph</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/comparision" title="comparision">comparision</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/composite-type" title="composite-type">composite-type</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/container" title="container">container</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/database" title="database">database</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/date" title="date">date</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/devicemapper" title="devicemapper">devicemapper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/dict" title="dict">dict</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/dml" title="dml">dml</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/dockerfile" title="dockerfile">dockerfile</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/driect-lvm" title="driect-lvm">driect-lvm</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/enum" title="enum">enum</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/etcd" title="etcd">etcd</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/failover" title="failover">failover</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/firewall" title="firewall">firewall</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/general-query" title="general-query">general-query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/generate_series" title="generate_series">generate_series</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/generate_subscripts" title="generate_subscripts">generate_subscripts</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/ha" title="ha">ha</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/image" title="image">image</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/inheritance" title="inheritance">inheritance</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/install" title="install">install</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/letsencrypt" title="letsencrypt">letsencrypt</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/log" title="log">log</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/logrotate" title="logrotate">logrotate</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/lvm" title="lvm">lvm</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/maven" title="maven">maven</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/mysql-config-editor" title="mysql-config-editor">mysql-config-editor</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/native" title="native">native</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/network" title="network">network</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/nmcli" title="nmcli">nmcli</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/partial-index" title="partial-index">partial-index</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/partition" title="partition">partition</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/partition-table" title="partition-table">partition-table</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/pg_dump" title="pg_dump">pg_dump</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/pgadmin" title="pgadmin">pgadmin</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/pip" title="pip">pip</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/pitr" title="pitr">pitr</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/postgres" title="postgres">postgres</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/postgresql.conf" title="postgresql.conf">postgresql.conf</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/query" title="query">query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/registry" title="registry">registry</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/restore" title="restore">restore</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/role" title="role">role</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/rsync" title="rsync">rsync</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/schema" title="schema">schema</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/serial" title="serial">serial</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/slow-query" title="slow-query">slow-query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/sqldeveloper" title="sqldeveloper">sqldeveloper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/ssh" title="ssh">ssh</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/standby" title="standby">standby</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/storage-driver" title="storage-driver">storage-driver</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/storage-drivers" title="storage-drivers">storage-drivers</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/streaming-replication" title="streaming-replication">streaming-replication</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/string" title="string">string</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/table" title="table">table</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/tablespace" title="tablespace">tablespace</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/team" title="team">team</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/teamdctl" title="teamdctl">teamdctl</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/time" title="time">time</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/timestamp" title="timestamp">timestamp</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/tls" title="tls">tls</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/tomcat" title="tomcat">tomcat</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/transaction-isolation" title="transaction-isolation">transaction-isolation</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/upgrade" title="upgrade">upgrade</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/user" title="user">user</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/virtualenvwrapper" title="virtualenvwrapper">virtualenvwrapper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/volumns" title="volumns">volumns</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/wal" title="wal">wal</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/%e6%95%b0%e5%ad%a6%e5%87%bd%e6%95%b0" title="数学函数">数学函数</a>
+	</div>
+</div>
+</aside>
+	</div>
+		<footer class="footer" itemscope="itemscope" itemtype="http://schema.org/WPFooter">
+			<div class="container container-inner">
+				<p class="footer__copyright">&copy; 2017 河马的池塘. Based on <a href="//wordpress.org/themes/mh-magazine-lite/" target="_blank" rel="nofollow noopener noreferrer">MH Magazine lite</a>.</p>
+			</div>
+		</footer>
+	</div>
+
+<script>
+	var navigation = responsiveNav(".menu", {
+		navClass: "menu--collapse",
+	});
+</script>
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-92973579-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+</body>
+</html>

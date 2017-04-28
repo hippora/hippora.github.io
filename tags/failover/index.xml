@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Failover on 河马的池塘</title>
+    <link>http://pool.idyi.net/tags/failover/</link>
+    <description>Recent content in Failover on 河马的池塘</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <copyright>Copyright (c) 2017, Hippo; all rights reserved.</copyright>
+    <lastBuildDate>Fri, 27 Feb 2015 23:49:43 +0800</lastBuildDate>
+    
+	<atom:link href="http://pool.idyi.net/tags/failover/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>postgresql高可用性之备库(四)</title>
+      <link>http://pool.idyi.net/2015/02/postgresql%E9%AB%98%E5%8F%AF%E7%94%A8%E6%80%A7%E4%B9%8B%E5%A4%87%E5%BA%93%E5%9B%9B/</link>
+      <pubDate>Fri, 27 Feb 2015 23:49:43 +0800</pubDate>
+      
+      <guid>http://pool.idyi.net/2015/02/postgresql%E9%AB%98%E5%8F%AF%E7%94%A8%E6%80%A7%E4%B9%8B%E5%A4%87%E5%BA%93%E5%9B%9B/</guid>
+      <description>&lt;p&gt;这篇主要讲failover&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

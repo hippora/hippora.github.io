@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>String on 河马的池塘</title>
+    <link>http://pool.idyi.net/tags/string/</link>
+    <description>Recent content in String on 河马的池塘</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <copyright>Copyright (c) 2017, Hippo; all rights reserved.</copyright>
+    <lastBuildDate>Wed, 25 Feb 2015 23:34:24 +0800</lastBuildDate>
+    
+	<atom:link href="http://pool.idyi.net/tags/string/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>postgresql字符串函数与操作符号(二)</title>
+      <link>http://pool.idyi.net/2015/02/postgresql%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%87%BD%E6%95%B0%E4%B8%8E%E6%93%8D%E4%BD%9C%E7%AC%A6%E5%8F%B7%E4%BA%8C/</link>
+      <pubDate>Wed, 25 Feb 2015 23:34:24 +0800</pubDate>
+      
+      <guid>http://pool.idyi.net/2015/02/postgresql%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%87%BD%E6%95%B0%E4%B8%8E%E6%93%8D%E4%BD%9C%E7%AC%A6%E5%8F%B7%E4%BA%8C/</guid>
+      <description>&lt;p&gt;接上一篇字符串函数&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>postgresql字符串函数与操作符号(一)</title>
+      <link>http://pool.idyi.net/2015/02/postgresql%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%87%BD%E6%95%B0%E4%B8%8E%E6%93%8D%E4%BD%9C%E7%AC%A6%E5%8F%B7%E4%B8%80/</link>
+      <pubDate>Wed, 25 Feb 2015 23:18:30 +0800</pubDate>
+      
+      <guid>http://pool.idyi.net/2015/02/postgresql%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%87%BD%E6%95%B0%E4%B8%8E%E6%93%8D%E4%BD%9C%E7%AC%A6%E5%8F%B7%E4%B8%80/</guid>
+      <description>&lt;p&gt;常用的字符串函数与操作符号&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

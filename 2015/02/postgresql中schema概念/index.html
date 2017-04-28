@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>postgresql中schema概念</title>
+<meta name="description" content="河马的笔记">
+<meta name="generator" content="Hugo 0.20.5" />
+<meta property="og:title" content="postgresql中schema概念" />
+<meta property="og:description" content="一个数据库中可以包含多个schema
+
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://pool.idyi.net/2015/02/postgresql%E4%B8%ADschema%E6%A6%82%E5%BF%B5/" />
+
+
+
+<meta property="article:published_time" content="2015-02-22T17:21:00&#43;08:00"/>
+<meta property="article:modified_time" content="2015-02-22T17:21:00&#43;08:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<link rel="dns-prefetch" href="//fonts.googleapis.com" />
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700" type="text/css" media="all" />
+<link rel="stylesheet" href="http://pool.idyi.netcss/style.css" type="text/css" media="all" />
+<script type="text/javascript" src="http://pool.idyi.netjs/scripts.js"></script>
+</head>
+<body class="body body-right-sidebar mobile" itemscope="itemscope" itemtype="http://schema.org/WebPage">
+	<div class="container container-outer">
+		<header class="header" itemscope="itemscope" itemtype="http://schema.org/WPHeader">
+			<div class="container container-inner clearfix">
+				<div class="logo" role="banner" itemscope="itemscope" itemtype="http://schema.org/Brand">
+					<a class="logo__link" href="http://pool.idyi.net" title="河马的池塘" rel="home">
+						<h1 class="logo__title">河马的池塘</h1>
+						<h2 class="logo__tagline">一些技术笔记</h2>
+					</a>
+				</div>
+			</div>
+			<nav class="menu" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<ul class="menu__list">
+		<li class="menu__item "><a class="menu__link" href="http://pool.idyi.net/about">ABOUT ME</a></li>
+	</ul>
+</nav>
+		</header>
+		<div class="wrapper clearfix">
+
+<div class="main-content content" role="main" itemprop="mainContentOfPage">
+	<article class="post">
+		<header class="post__header clearfix">
+			<h1 class="post__title">postgresql中schema概念</h1>
+			<p class="post__meta meta">
+				<svg class="icon icon-time" height="14" viewBox="0 0 16 16" width="14" xmlns="http://www.w3.org/2000/svg"><path d="m8-.0000003c-4.4 0-8 3.6-8 8 0 4.4000003 3.6 8.0000003 8 8.0000003 4.4 0 8-3.6 8-8.0000003 0-4.4-3.6-8-8-8zm0 14.4000003c-3.52 0-6.4-2.88-6.4-6.4000003 0-3.52 2.88-6.4 6.4-6.4 3.52 0 6.4 2.88 6.4 6.4 0 3.5200003-2.88 6.4000003-6.4 6.4000003zm.4-10.4000003h-1.2v4.8l4.16 2.5600003.64-1.04-3.6-2.1600003z"/></svg>
+				<time class="post__meta-date" datetime="2015-02-22 17:21:00 &#43;0800 CST">February 22, 2015</time>
+				<span class="post__meta-categories meta-categories">
+					<svg class="icon icon-category" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m7 2l1 2h8v11h-16v-13z"/></svg>
+					<a class="meta-categories__link" href="http://pool.idyi.net/categories/postgresql" rel="category">postgresql</a></span>
+			</p>
+		</header>
+		<div class="post__content clearfix">
+			<p>一个数据库中可以包含多个schema</p>
+
+<p></p>
+
+<p>schema概念有点像命名空间或者把它想像成一个文件系统中的目录,差别就是这个schema下不能再有schema嵌套.
+各个对象比如表,函数等存放在各个schema下,同一个schema下不能有重复的对象名字,但在不同schema下可以重复.</p>
+
+<p><strong>使用schema的作用</strong></p>
+
+<ul>
+<li>方便管理多个用户共享一个数据库,但是又可以互相独立.</li>
+<li>方便管理众多对象,更有逻辑性</li>
+<li>方便兼容某些第三方应用程序,创建对象时是有schema的</li>
+</ul>
+
+<blockquote>
+<p>比如要设计一个复杂系统.由众多模块构成,有时候模块间又需要有独立性.各模块存放单独的数据库显然是不合适的.
+这时候使用schema来分类各模块间的对象,再对用户进行适当的权限控制.这样逻辑也非常清晰.</p>
+</blockquote>
+
+<h2 id="创建schema">创建schema</h2>
+
+<pre><code>db01=# create schema schema01;
+CREATE SCHEMA
+db01=# \dn
+   List of schemas
+   Name   |  Owner
+----------+----------
+ public   | postgres
+ schema01 | postgres
+(2 rows)
+</code></pre>
+
+<h3 id="在schema中创建对象">在schema中创建对象</h3>
+
+<pre><code>db01=# create table schema01.t1(id int);
+CREATE TABLE
+db01=# insert into schema01.t1 values(1);
+INSERT 0 1
+db01=# select * from t1;
+ERROR:  relation &quot;t1&quot; does not exist
+LINE 1: select * from t1;
+                      ^
+db01=# select * from schema01.t1;
+ id
+----
+  1
+(1 row)
+db01=# select * from db01.schema01.t1;
+ id
+----
+  1
+(1 row)
+</code></pre>
+
+<p><em>默认是在public这个schema下.因此要带上schema名称.数据库名字如果要带上,只能是当前连接的数据库!!</em></p>
+
+<h2 id="删除schema">删除schema</h2>
+
+<pre><code>db01=# drop schema schema01;
+ERROR:  cannot drop schema schema01 because other objects depend on it
+DETAIL:  table schema01.t1 depends on schema schema01
+HINT:  Use DROP ... CASCADE to drop the dependent objects too.
+db01=# drop schema schema01 cascade;
+NOTICE:  drop cascades to table schema01.t1
+DROP SCHEMA
+</code></pre>
+
+<p><em>schema下有对象如果需要一起删除,需要带上cascade关键字.有点像使用rmdir删除目录一样,文件夹下有东西不然删除.</em></p>
+
+<h2 id="创建schema指定owner">创建schema指定owner</h2>
+
+<p><em>默认是谁创建的schema,owner就是谁,当然也可以指定</em></p>
+
+<pre><code>db01=# create schema s01 authorization hippo;
+CREATE SCHEMA
+db01=# create schema authorization hippo;
+CREATE SCHEMA
+db01=# \dn
+  List of schemas
+  Name  |  Owner
+--------+----------
+ hippo  | hippo
+ public | postgres
+ s01    | hippo
+(3 rows)
+</code></pre>
+
+<p><em>指定了owner,不指定schema,则schema名字与owner一致</em></p>
+
+<p><strong>在oracle中,默认创建用户的时候,创建了一个和用户名一样的schema下,并且互相绑定.这里有点类似</strong></p>
+
+<h2 id="schema-的搜索路径-search-path">schema 的搜索路径(Search Path)</h2>
+
+<p><em>如果每个schema下都有同名的对象(比如表t),我查询的是哪个schema下的表呢</em></p>
+
+<p><strong>pg下通过一个搜索路径参数来控制, search_path,我们先来模拟些数据</strong></p>
+
+<pre><code>db01=# \c - hippo
+You are now connected to database &quot;db01&quot; as user &quot;hippo&quot;.
+db01=# create table public.t1(id text);
+CREATE TABLE
+db01=# insert into public.t1 values('public');
+INSERT 0 1
+db01=# create table s01.t1(id text);
+CREATE TABLE
+db01=# insert into s01.t1 values('s01');
+INSERT 0 1
+db01=# create table hippo.t1(id text);
+CREATE TABLE
+db01=# insert into hippo.t1 values('hippo');
+INSERT 0 1
+db01=&gt; select * from pg_tables where tablename = 't1';
+ schemaname | tablename | tableowner | tablespace | hasindexes | hasrules | hastriggers
+------------+-----------+------------+------------+------------+----------+-------------
+ public     | t1        | hippo      |            | f          | f        | f
+ s01        | t1        | hippo      |            | f          | f        | f
+ hippo      | t1        | hippo      |            | f          | f        | f
+(3 rows)
+</code></pre>
+
+<p>测试一下</p>
+
+<pre><code>db01=&gt; show search_path;
+  search_path
+----------------
+ &quot;$user&quot;,public
+(1 row)
+
+db01=&gt; select * from t1;
+  id
+-------
+ hippo
+(1 row)
+
+db01=&gt; set search_path = 's01';
+SET
+db01=&gt; select * from t1;
+ id
+-----
+ s01
+(1 row)
+</code></pre>
+
+<p>如果不在搜索路径里面,即使存在其他schema下,也会找不到.</p>
+
+<pre><code>db01=&gt; drop table t1;
+DROP TABLE
+db01=&gt; select * from t1;
+ERROR:  relation &quot;t1&quot; does not exist
+LINE 1: select * from t1;
+                          ^
+</code></pre>
+
+<p><strong>创建的表存放哪个schema也跟search_path有关</strong></p>
+
+<pre><code>db01=&gt; set search_path=ssssss,s01;
+SET
+db01=&gt; create table t2(id int);
+CREATE TABLE
+db01=&gt; \dt        --ssssss这个schema不存在
+       List of relations
+ Schema | Name | Type  | Owner
+--------+------+-------+-------
+ s01    | t2   | table | hippo
+(1 row)
+
+db01=&gt; set search_path='';
+SET
+db01=&gt; create table t3(id int);
+ERROR:  no schema has been selected to create in
+</code></pre>
+
+<p><em>跟你是哪个用户无关,现在知道为什么之前建的表为什么都是在public下了吧</em></p>
+
+<h2 id="schema-与权限">schema 与权限</h2>
+
+<p><em>只有login权限的用户,对于owner不是自己的schema是没有任何权限的</em></p>
+
+<pre><code>db01=&gt; \c - postgres
+db01=# create schema s02;
+CREATE SCHEMA
+db01=# create role u02 login;
+CREATE ROLE
+db01=# create table s02.t1(id int);
+CREATE TABLE
+db01=# \c - u02
+You are now connected to database &quot;db01&quot; as user &quot;u02&quot;.
+db01=&gt; select * from s02.t1;
+ERROR:  permission denied for schema s02
+LINE 1: select * from s02.t1;
+                      ^
+db01=&gt; create table s02.t2(id int);
+ERROR:  permission denied for schema s02
+</code></pre>
+
+<p><em>赋权usage权限</em></p>
+
+<pre><code>db01=&gt; \c - postgres
+You are now connected to database &quot;db01&quot; as user &quot;postgres&quot;.
+db01=# grant usage on schema s02 to u02;
+GRANT
+db01=# \c - u02;
+You are now connected to database &quot;db01&quot; as user &quot;u02&quot;.
+db01=&gt; select * from s02.t1;
+ERROR:  permission denied for relation t1
+</code></pre>
+
+<p><em>注意,这里提示错误已经不一样了.是没有相应的查询权限</em></p>
+
+<pre><code>db01=# grant select on all tables in schema s02 to u02;
+GRANT
+db01=# \c - u02
+You are now connected to database &quot;db01&quot; as user &quot;u02&quot;.
+db01=&gt; select * from s02.t1;
+ id
+----
+(0 rows)
+</code></pre>
+
+<p><strong>系统默认将usage,create权限授权给了PUBLIC(所有用户),所以之前新建用户就可以创建表就是这个原因</strong></p>
+
+<pre><code>db01=&gt; create table public.t2(id int);
+CREATE TABLE
+db01=# revoke usage,create on schema public from public;
+REVOKE
+db01=# \c - u02
+You are now connected to database &quot;db01&quot; as user &quot;u02&quot;.
+db01=&gt; \dt
+No relations found.
+db01=&gt; select * fromt t2;
+ERROR:  syntax error at or near &quot;fromt&quot;
+LINE 1: select * fromt t2;
+                 ^
+</code></pre>
+
+<h2 id="系统schema-pg-catalog">系统schema, pg_catalog</h2>
+
+<p><strong>pg_catalog存放了各系统表,内置函数等等,它总是在搜索路径中,需要通过current_schemas看到</strong></p>
+
+<pre><code>db01=&gt; \c - hippo
+You are now connected to database &quot;db01&quot; as user &quot;hippo&quot;.
+db01=&gt; show search_path;
+  search_path
+----------------
+ &quot;$user&quot;,public
+(1 row)
+
+db01=&gt; select current_schemas(true);
+      current_schemas
+---------------------------
+ {pg_catalog,hippo,public}
+(1 row)
+
+db01=&gt; set search_path='';
+SET
+db01=&gt; select current_schemas(true);
+ current_schemas
+-----------------
+ {pg_catalog}
+(1 row)
+</code></pre>
+
+<h2 id="schema-使用范例">schema 使用范例</h2>
+
+<pre><code>db02=&gt; \c - postgres
+You are now connected to database &quot;db02&quot; as user &quot;postgres&quot;.
+db02=# drop schema public;
+DROP SCHEMA
+db02=# create role jack login;
+CREATE ROLE
+db02=# create role joe login;
+CREATE ROLE
+db02=# create schema authorization jack;
+CREATE SCHEMA
+db02=# create schema authorization joe;
+CREATE SCHEMA
+db02=# grant usage on schema jack to joe;
+GRANT
+db02=# grant usage on schema joe;
+GRANT
+db02=# grant select on all tables in schema jack to joe;
+GRANT
+db02=# grant select on all tables in schema joe to jack;
+GRANT
+</code></pre>
+
+<p><em>删除public这个schema,限制用户只在自己的schema下进行活动,防止在public下占用过多的空间</em></p>
+
+<p><em>可以创建一些有限制权限的用户,比如只有增删改查权限的用户只能访问特定的schema,记得修改它的search_path</em></p>
+
+<p><em>grant select on all tables in schema .. to .. 语句只影响当前schema下的表,之后创建的表不受影响,这个需要注意.</em></p>
+
+<p>//END</p>
+		</div>
+		
+<div class="post__tags tags clearfix">
+	<svg class="icon icon-tag" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="m4.73135 3.3795002q0-.5597-.39604-.9557-.39604-.3961-.95577-.3961-.55974 0-.95578.3961-.39604.396-.39604.9557 0 .5598.39604.9558.39604.3961.95578.3961.55973 0 .95577-.3961.39604-.396.39604-.9558zm11.26865 6.0832q0 .5596998-.39076.9504998l-5.18548 5.196q-.41188.3908-.9610504.3908-.55974 0-.9505-.3908l-7.5511496-7.5616998q-.40132-.3907-.68119-1.0666-.27987-.6759-.27987-1.2357v-4.3934q0-.54920004.40132-.95050004.40132-.4013.9505-.4013h4.39339q.55974 0 1.23565.2799.67591.2798 1.07723.6812l7.55115 7.54060004q.39076.4118.39076.961z"/></svg>
+	<ul class="tags__list">
+		<li class="tags__item"><a class="tags__link" href="http://pool.idyi.net/tags/schema/" rel="tag">schema</a></li>
+	</ul>
+</div>
+
+	</article>
+	
+<div class="authorbox clearfix">
+	<figure class="authorbox__avatar">
+		<img alt="Hippo avatar" src="http://pool.idyi.net/img/avatar.jpg" class="avatar" height="90" width="90">
+	</figure>
+	<div class="authorbox__header">
+		<span class="authorbox__name">About Hippo</span>
+	</div>
+	<div class="authorbox__description">
+		Hippo&#39;s true identity is unknown. Maybe he is a successful blogger or writer. Nobody knows it.
+	</div>
+</div>
+	
+<nav class="post-nav row clearfix" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<div class="post-nav__item post-nav__item--prev col-1-2">
+		<a class="post-nav__link" href="http://pool.idyi.net/2015/02/postgresql%E5%9C%A8%E7%BA%BF%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E5%9B%9B/" rel="prev"><span class="post-nav__caption">«Previous</span><p class="post-nav__post-title">postgresql在线备份与恢复(四)</p></a>
+	</div>
+	<div class="post-nav__item post-nav__item--next col-1-2">
+		<a class="post-nav__link" href="http://pool.idyi.net/2015/02/postgresql%E4%B8%ADdml%E6%93%8D%E4%BD%9C/" rel="next"><span class="post-nav__caption">Next»</span><p class="post-nav__post-title">postgresql中DML操作</p></a>
+	</div>
+</nav>
+
+	
+<div class="comments">
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'hippool';
+    var disqus_identifier = 'http:\/\/pool.idyi.net\/2015\/02\/postgresql%E4%B8%ADschema%E6%A6%82%E5%BF%B5\/';
+    var disqus_title = 'postgresql中schema概念';
+    var disqus_url = 'http:\/\/pool.idyi.net\/2015\/02\/postgresql%E4%B8%ADschema%E6%A6%82%E5%BF%B5\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+</div>
+
+<aside class="sidebar" itemscope="itemscope" itemtype="http://schema.org/WPSideBar">
+	
+<div class="widget-search widget">
+	<form class="widget-search__form" role="search" method="get" action="//google.com/search">
+		<label>
+			<span class="screen-reader-text">Search for:</span>
+			<input class="widget-search__field" type="search" placeholder="SEARCH..." value="" name="q">
+		</label>
+		<input class="widget-search__submit" type="submit" value="Search">
+		<input type="hidden" name="sitesearch" value="http://pool.idyi.net" />
+	</form>
+</div>
+	
+<div class="widget-recent widget">
+	<h4 class="widget__title">Recent Posts</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph%E5%AE%89%E8%A3%85%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98/">ceph安装中遇到的问题</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph-%E5%AE%89%E8%A3%85/">ceph 安装</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph-%E5%AE%89%E8%A3%85%E5%89%8D%E7%9A%84%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C/">ceph 安装前的准备工作</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/02/networkmanager%E9%85%8D%E7%BD%AE%E7%BD%91%E7%BB%9Cteam/">NetworkManager配置网络team</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/06/docker-registry-%E5%AD%98%E5%82%A8%E5%88%B0aliyun-oss/">Docker registry 存储到aliyun oss</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/06/docker-registry/">Docker registry</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/%E4%BD%BF%E7%94%A8letsencrypt/">使用letsencrypt</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/docker-daemon%E7%9A%84http-socket-tls%E5%8A%A0%E5%AF%86%E8%BF%9E%E6%8E%A5/">docker daemon的HTTP socket TLS加密连接</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/docker%E7%9A%84devicemapper-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">docker的devicemapper 最佳实践</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/docker%E9%80%89%E6%8B%A9%E5%AD%98%E5%82%A8%E9%A9%B1%E5%8A%A8%E5%99%A8/">docker选择存储驱动器</a></li>
+		</ul>
+	</div>
+</div>
+
+	
+<div class="widget-categories widget">
+	<h4 class="widget__title">Categories</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/ceph">Ceph</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/docker">Docker</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/java">Java</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/linux">Linux</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/macos">Macos</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/mysql">Mysql</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/oracle">Oracle</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/other">Other</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/postgresql">Postgresql</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/python">Python</a></li>
+		</ul>
+	</div>
+</div>
+	
+<div class="widget-taglist widget">
+	<h4 class="widget__title">Tags</h4>
+	<div class="widget__content">
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/aliyun-oss" title="aliyun-oss">aliyun-oss</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/array" title="array">array</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/backup" title="backup">backup</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/bond" title="bond">bond</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/ceph" title="ceph">ceph</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/comparision" title="comparision">comparision</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/composite-type" title="composite-type">composite-type</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/container" title="container">container</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/database" title="database">database</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/date" title="date">date</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/devicemapper" title="devicemapper">devicemapper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/dict" title="dict">dict</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/dml" title="dml">dml</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/dockerfile" title="dockerfile">dockerfile</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/driect-lvm" title="driect-lvm">driect-lvm</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/enum" title="enum">enum</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/etcd" title="etcd">etcd</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/failover" title="failover">failover</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/firewall" title="firewall">firewall</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/general-query" title="general-query">general-query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/generate_series" title="generate_series">generate_series</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/generate_subscripts" title="generate_subscripts">generate_subscripts</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/ha" title="ha">ha</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/image" title="image">image</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/inheritance" title="inheritance">inheritance</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/install" title="install">install</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/letsencrypt" title="letsencrypt">letsencrypt</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/log" title="log">log</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/logrotate" title="logrotate">logrotate</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/lvm" title="lvm">lvm</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/maven" title="maven">maven</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/mysql-config-editor" title="mysql-config-editor">mysql-config-editor</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/native" title="native">native</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/network" title="network">network</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/nmcli" title="nmcli">nmcli</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/partial-index" title="partial-index">partial-index</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/partition" title="partition">partition</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/partition-table" title="partition-table">partition-table</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/pg_dump" title="pg_dump">pg_dump</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/pgadmin" title="pgadmin">pgadmin</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/pip" title="pip">pip</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/pitr" title="pitr">pitr</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/postgres" title="postgres">postgres</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/postgresql.conf" title="postgresql.conf">postgresql.conf</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/query" title="query">query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/registry" title="registry">registry</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/restore" title="restore">restore</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/role" title="role">role</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/rsync" title="rsync">rsync</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/schema" title="schema">schema</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/serial" title="serial">serial</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/slow-query" title="slow-query">slow-query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/sqldeveloper" title="sqldeveloper">sqldeveloper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/ssh" title="ssh">ssh</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/standby" title="standby">standby</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/storage-driver" title="storage-driver">storage-driver</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/storage-drivers" title="storage-drivers">storage-drivers</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/streaming-replication" title="streaming-replication">streaming-replication</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/string" title="string">string</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/table" title="table">table</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/tablespace" title="tablespace">tablespace</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/team" title="team">team</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/teamdctl" title="teamdctl">teamdctl</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/time" title="time">time</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/timestamp" title="timestamp">timestamp</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/tls" title="tls">tls</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/tomcat" title="tomcat">tomcat</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/transaction-isolation" title="transaction-isolation">transaction-isolation</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/upgrade" title="upgrade">upgrade</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/user" title="user">user</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/virtualenvwrapper" title="virtualenvwrapper">virtualenvwrapper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/volumns" title="volumns">volumns</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/wal" title="wal">wal</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/%e6%95%b0%e5%ad%a6%e5%87%bd%e6%95%b0" title="数学函数">数学函数</a>
+	</div>
+</div>
+</aside>
+	</div>
+		<footer class="footer" itemscope="itemscope" itemtype="http://schema.org/WPFooter">
+			<div class="container container-inner">
+				<p class="footer__copyright">&copy; 2017 河马的池塘. Based on <a href="//wordpress.org/themes/mh-magazine-lite/" target="_blank" rel="nofollow noopener noreferrer">MH Magazine lite</a>.</p>
+			</div>
+		</footer>
+	</div>
+
+<script>
+	var navigation = responsiveNav(".menu", {
+		navClass: "menu--collapse",
+	});
+</script>
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-92973579-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+</body>
+</html>

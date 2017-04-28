@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Rsync on 河马的池塘</title>
+    <link>http://pool.idyi.net/tags/rsync/</link>
+    <description>Recent content in Rsync on 河马的池塘</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <copyright>Copyright (c) 2017, Hippo; all rights reserved.</copyright>
+    <lastBuildDate>Thu, 30 Jul 2015 10:19:21 +0800</lastBuildDate>
+    
+	<atom:link href="http://pool.idyi.net/tags/rsync/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>rsync配置</title>
+      <link>http://pool.idyi.net/2015/07/rsync%E9%85%8D%E7%BD%AE/</link>
+      <pubDate>Thu, 30 Jul 2015 10:19:21 +0800</pubDate>
+      
+      <guid>http://pool.idyi.net/2015/07/rsync%E9%85%8D%E7%BD%AE/</guid>
+      <description>&lt;p&gt;正好需要用到rsync.记录一下基本同步配置&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>postgresql高可用性之备库(二)</title>
+<meta name="description" content="河马的笔记">
+<meta name="generator" content="Hugo 0.20.5" />
+<meta property="og:title" content="postgresql高可用性之备库(二)" />
+<meta property="og:description" content="这篇主要讲如果将刚才基于WAL文件的备库设置成Streaming Replication
+
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://pool.idyi.net/2015/02/postgresql%E9%AB%98%E5%8F%AF%E7%94%A8%E6%80%A7%E4%B9%8B%E5%A4%87%E5%BA%93%E4%BA%8C/" />
+
+
+
+<meta property="article:published_time" content="2015-02-27T23:49:38&#43;08:00"/>
+<meta property="article:modified_time" content="2015-02-27T23:49:38&#43;08:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<link rel="dns-prefetch" href="//fonts.googleapis.com" />
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700" type="text/css" media="all" />
+<link rel="stylesheet" href="http://pool.idyi.netcss/style.css" type="text/css" media="all" />
+<script type="text/javascript" src="http://pool.idyi.netjs/scripts.js"></script>
+</head>
+<body class="body body-right-sidebar mobile" itemscope="itemscope" itemtype="http://schema.org/WebPage">
+	<div class="container container-outer">
+		<header class="header" itemscope="itemscope" itemtype="http://schema.org/WPHeader">
+			<div class="container container-inner clearfix">
+				<div class="logo" role="banner" itemscope="itemscope" itemtype="http://schema.org/Brand">
+					<a class="logo__link" href="http://pool.idyi.net" title="河马的池塘" rel="home">
+						<h1 class="logo__title">河马的池塘</h1>
+						<h2 class="logo__tagline">一些技术笔记</h2>
+					</a>
+				</div>
+			</div>
+			<nav class="menu" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<ul class="menu__list">
+		<li class="menu__item "><a class="menu__link" href="http://pool.idyi.net/about">ABOUT ME</a></li>
+	</ul>
+</nav>
+		</header>
+		<div class="wrapper clearfix">
+
+<div class="main-content content" role="main" itemprop="mainContentOfPage">
+	<article class="post">
+		<header class="post__header clearfix">
+			<h1 class="post__title">postgresql高可用性之备库(二)</h1>
+			<p class="post__meta meta">
+				<svg class="icon icon-time" height="14" viewBox="0 0 16 16" width="14" xmlns="http://www.w3.org/2000/svg"><path d="m8-.0000003c-4.4 0-8 3.6-8 8 0 4.4000003 3.6 8.0000003 8 8.0000003 4.4 0 8-3.6 8-8.0000003 0-4.4-3.6-8-8-8zm0 14.4000003c-3.52 0-6.4-2.88-6.4-6.4000003 0-3.52 2.88-6.4 6.4-6.4 3.52 0 6.4 2.88 6.4 6.4 0 3.5200003-2.88 6.4000003-6.4 6.4000003zm.4-10.4000003h-1.2v4.8l4.16 2.5600003.64-1.04-3.6-2.1600003z"/></svg>
+				<time class="post__meta-date" datetime="2015-02-27 23:49:38 &#43;0800 CST">February 27, 2015</time>
+				<span class="post__meta-categories meta-categories">
+					<svg class="icon icon-category" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m7 2l1 2h8v11h-16v-13z"/></svg>
+					<a class="meta-categories__link" href="http://pool.idyi.net/categories/postgresql" rel="category">postgresql</a></span>
+			</p>
+		</header>
+		<div class="post__content clearfix">
+			<p>这篇主要讲如果将刚才基于WAL文件的备库设置成Streaming Replication</p>
+
+<p></p>
+
+<h2 id="概述">概述</h2>
+
+<p>由于基于WAL归档搭建的备库,实时性不太好
+而streaming replication可以将备库跟主库数据同步差异缩小至最小,实用性更好一点
+这篇主要将上一篇的配置进行修改,使变成流复制的模式运行</p>
+
+<h2 id="主库修改配置">主库修改配置</h2>
+
+<h3 id="添加一个复制用户">添加一个复制用户</h3>
+
+<pre><code>postgres=# create role repl replication login password 'postgres';
+CREATE ROLE
+</code></pre>
+
+<h3 id="修改postgres-conf">修改postgres.conf</h3>
+
+<pre><code>[postgres@fnddb data]$ vi postgresql.conf
+max_wal_senders = 1
+listen_addresses = '*'
+......
+</code></pre>
+
+<blockquote>
+<p>上一篇由于用到pg_basebackup,这两个参数已经修改好了</p>
+</blockquote>
+
+<h3 id="修改-pg-hba-conf">修改 pg_hba.conf</h3>
+
+<pre><code>[postgres@fnddb data]$ vi pg_hba.conf
+......
+#host    replication     postgres        192.168.10.72/32        md5
+host    replication     repl        192.168.10.72/32        md5
+</code></pre>
+
+<blockquote>
+<p>上一篇应为使用superuser运行的pg_basebackup,添加了认证,这里把它注释掉,使用我们创建的用户</p>
+</blockquote>
+
+<h3 id="使配置生效">使配置生效</h3>
+
+<pre><code>[postgres@fnddb data]$ pg_ctl reload
+</code></pre>
+
+<h2 id="备库修改配置">备库修改配置</h2>
+
+<h3 id="recovery-conf修改">recovery.conf修改</h3>
+
+<pre><code>[postgres@vm2 data]$ vi recovery.conf
+standby_mode = 'on'
+restore_command = 'cp /var/lib/pgsql/pg_archive/%f %p'
+primary_conninfo = 'user=repl password=postgres host=192.168.10.74 port=5432'
+</code></pre>
+
+<blockquote>
+<p>前两个参数上一篇中已经有了</p>
+</blockquote>
+
+<h3 id="重启备库">重启备库</h3>
+
+<pre><code>[postgres@vm2 data]$ pg_ctl restart
+</code></pre>
+
+<p><em>查看日志</em></p>
+
+<pre><code>[postgres@vm2 data]$ tail -f pg_log/postgresql-27_213214.csv
+2015-02-27 21:32:14.545 CST,,,22002,,54f071de.55f2,2,,2015-02-27 21:32:14 CST,,0,LOG,00000,&quot;database system is ready to accept read only connections&quot;,,,,,,,,,&quot;&quot;
+2015-02-27 21:32:14.554 CST,,,22004,,54f071de.55f4,6,,2015-02-27 21:32:14 CST,1/0,0,LOG,00000,&quot;unexpected pageaddr 0/25000000 in log segment 000000030000000000000028, offset 0&quot;,,,,,,,,,&quot;&quot;
+2015-02-27 21:32:14.564 CST,,,22011,,54f071de.55fb,1,,2015-02-27 21:32:14 CST,,0,LOG,00000,&quot;started streaming WAL from primary at 0/28000000 on timeline 3&quot;,,,,,,,,,&quot;&quot;
+</code></pre>
+
+<h2 id="检查测试">检查测试</h2>
+
+<p><em>主库</em></p>
+
+<pre><code>db01=# insert into t_standby_test select generate_series(1,1000),'name';
+INSERT 0 1000
+db01=# select count(*) from t_standby_test;
+ count
+-------
+  5000
+(1 row)
+</code></pre>
+
+<p><em>备库</em></p>
+
+<pre><code>db01=# select count(*) from t_standby_test;
+ count
+-------
+  5000
+(1 row)
+
+db01=# insert into t_standby_test select generate_series(1,1000),'name';
+ERROR:  cannot execute INSERT in a read-only transaction
+</code></pre>
+
+<blockquote>
+<p>几乎是实时同步,要看主库的压力
+因为是只读库,备库上不允许各种DDL,DML等影响数据库的操作</p>
+</blockquote>
+
+<h2 id="新建表空间同步">新建表空间同步</h2>
+
+<p><em>表空间因为涉及到操作系统目录,我来测试下是否需要事先主备服务器都要先创建目录</em></p>
+
+<pre><code>[postgres@fnddb pgsql]$ mkdir tsdata03
+db01=# create tablespace tsdata03 location '/var/lib/pgsql/tsdata03';
+CREATE TABLESPACE
+</code></pre>
+
+<p><em>发现备库已经宕机了,检查备库日志</em></p>
+
+<pre><code>......
+2015-02-27 21:46:55.340 CST,,,22004,,54f071de.55f4,7,,2015-02-27 21:32:14 CST,1/0,0,FATAL,58P01,&quot;directory &quot;&quot;/var/lib/pgsql/tsdata03&quot;&quot; does not exist&quot;,,&quot;Create this directory for the tablespace before restarting the server.&quot;,,,&quot;xlog redo create tablespace: 24605 &quot;&quot;/var/lib/pgsql/tsdata03&quot;&quot;&quot;,,,,&quot;&quot;
+2015-02-27 21:46:55.341 CST,,,22002,,54f071de.55f2,3,,2015-02-27 21:32:14 CST,,0,LOG,00000,&quot;startup process (PID 22004) exited with exit code 1&quot;,,,,,,,,,&quot;&quot;
+2015-02-27 21:46:55.341 CST,,,22002,,54f071de.55f2,4,,2015-02-27 21:32:14 CST,,0,LOG,00000,&quot;terminating any other active server processes&quot;,,,,,,,,,&quot;&quot;
+2015-02-27 21:46:55.342 CST,&quot;hippo&quot;,&quot;db01&quot;,22173,&quot;[local]&quot;,54f0726a.569d,5,&quot;idle&quot;,2015-02-27 21:34:34 CST,2/0,0,WARNING,57P02,&quot;terminating connection because of crash of another server process&quot;,&quot;The postmaster has commanded this server process to roll back the current transaction and exit, because another server process exited abnormally and possibly corrupted shared memory.&quot;,&quot;In a moment you should be able to reconnect to the database and repeat your command.&quot;,,,,,,,&quot;psql&quot;
+</code></pre>
+
+<p><em>我们在备库上建好目录再启动</em></p>
+
+<pre><code>[postgres@vm2 ~]$ mkdir /var/lib/pgsql/tsdata03
+[postgres@vm2 ~]$ pg_ctl start
+[postgres@vm2 ~]$ psql -c '\db tsdata03'
+            List of tablespaces
+   Name   | Owner |        Location
+----------+-------+-------------------------
+ tsdata03 | hippo | /var/lib/pgsql/tsdata03
+(1 row)
+</code></pre>
+
+<blockquote>
+<p>所以主库创建表空间,需要在所有的主备服务器上事先创建好目录.</p>
+</blockquote>
+
+<h2 id="流复制监控">流复制监控</h2>
+
+<p><em>主库上:</em></p>
+
+<pre><code>db01=# select pg_current_xlog_location();
+ pg_current_xlog_location
+--------------------------
+ 0/28041308
+(1 row)
+
+db01=# \x
+Expanded display is on.
+db01=# select * from pg_stat_replication;
+-[ RECORD 1 ]----+------------------------------
+pid              | 11801
+usesysid         | 24601
+usename          | repl
+application_name | walreceiver
+client_addr      | 192.168.10.72
+client_hostname  |
+client_port      | 52252
+backend_start    | 2015-02-27 21:49:49.197973+08
+backend_xmin     |
+state            | streaming
+sent_location    | 0/28041308
+write_location   | 0/28041308
+flush_location   | 0/28041308
+replay_location  | 0/28041308
+sync_priority    | 0
+sync_state       | async
+</code></pre>
+
+<p><em>备库</em></p>
+
+<pre><code>postgres=# select pg_last_xlog_receive_location();
+ pg_last_xlog_receive_location
+-------------------------------
+ 0/28041308
+(1 row)
+</code></pre>
+
+<blockquote>
+<p>pg_current_xlog_location 和pg_last_xlog_receive_location 检查主库xlog位置及备库接受到的位置
+如果一直相差较大,说明主库的负载比较大.</p>
+</blockquote>
+
+<p>未完待续&hellip;&hellip;</p>
+
+<p>//END</p>
+		</div>
+		
+<div class="post__tags tags clearfix">
+	<svg class="icon icon-tag" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="m4.73135 3.3795002q0-.5597-.39604-.9557-.39604-.3961-.95577-.3961-.55974 0-.95578.3961-.39604.396-.39604.9557 0 .5598.39604.9558.39604.3961.95578.3961.55973 0 .95577-.3961.39604-.396.39604-.9558zm11.26865 6.0832q0 .5596998-.39076.9504998l-5.18548 5.196q-.41188.3908-.9610504.3908-.55974 0-.9505-.3908l-7.5511496-7.5616998q-.40132-.3907-.68119-1.0666-.27987-.6759-.27987-1.2357v-4.3934q0-.54920004.40132-.95050004.40132-.4013.9505-.4013h4.39339q.55974 0 1.23565.2799.67591.2798 1.07723.6812l7.55115 7.54060004q.39076.4118.39076.961z"/></svg>
+	<ul class="tags__list">
+		<li class="tags__item"><a class="tags__link" href="http://pool.idyi.net/tags/streaming-replication/" rel="tag">streaming replication</a></li>
+		<li class="tags__item"><a class="tags__link" href="http://pool.idyi.net/tags/ha/" rel="tag">HA</a></li>
+	</ul>
+</div>
+
+	</article>
+	
+<div class="authorbox clearfix">
+	<figure class="authorbox__avatar">
+		<img alt="Hippo avatar" src="http://pool.idyi.net/img/avatar.jpg" class="avatar" height="90" width="90">
+	</figure>
+	<div class="authorbox__header">
+		<span class="authorbox__name">About Hippo</span>
+	</div>
+	<div class="authorbox__description">
+		Hippo&#39;s true identity is unknown. Maybe he is a successful blogger or writer. Nobody knows it.
+	</div>
+</div>
+	
+<nav class="post-nav row clearfix" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<div class="post-nav__item post-nav__item--prev col-1-2">
+		<a class="post-nav__link" href="http://pool.idyi.net/2015/02/postgresql%E9%AB%98%E5%8F%AF%E7%94%A8%E6%80%A7%E4%B9%8B%E5%A4%87%E5%BA%93%E4%B8%80/" rel="prev"><span class="post-nav__caption">«Previous</span><p class="post-nav__post-title">postgresql高可用性之备库(一)</p></a>
+	</div>
+	<div class="post-nav__item post-nav__item--next col-1-2">
+		<a class="post-nav__link" href="http://pool.idyi.net/2015/02/postgresql%E9%AB%98%E5%8F%AF%E7%94%A8%E6%80%A7%E4%B9%8B%E5%A4%87%E5%BA%93%E4%B8%89/" rel="next"><span class="post-nav__caption">Next»</span><p class="post-nav__post-title">postgresql高可用性之备库(三)</p></a>
+	</div>
+</nav>
+
+	
+<div class="comments">
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'hippool';
+    var disqus_identifier = 'http:\/\/pool.idyi.net\/2015\/02\/postgresql%E9%AB%98%E5%8F%AF%E7%94%A8%E6%80%A7%E4%B9%8B%E5%A4%87%E5%BA%93%E4%BA%8C\/';
+    var disqus_title = 'postgresql高可用性之备库(二)';
+    var disqus_url = 'http:\/\/pool.idyi.net\/2015\/02\/postgresql%E9%AB%98%E5%8F%AF%E7%94%A8%E6%80%A7%E4%B9%8B%E5%A4%87%E5%BA%93%E4%BA%8C\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+</div>
+
+<aside class="sidebar" itemscope="itemscope" itemtype="http://schema.org/WPSideBar">
+	
+<div class="widget-search widget">
+	<form class="widget-search__form" role="search" method="get" action="//google.com/search">
+		<label>
+			<span class="screen-reader-text">Search for:</span>
+			<input class="widget-search__field" type="search" placeholder="SEARCH..." value="" name="q">
+		</label>
+		<input class="widget-search__submit" type="submit" value="Search">
+		<input type="hidden" name="sitesearch" value="http://pool.idyi.net" />
+	</form>
+</div>
+	
+<div class="widget-recent widget">
+	<h4 class="widget__title">Recent Posts</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph%E5%AE%89%E8%A3%85%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98/">ceph安装中遇到的问题</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph-%E5%AE%89%E8%A3%85/">ceph 安装</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph-%E5%AE%89%E8%A3%85%E5%89%8D%E7%9A%84%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C/">ceph 安装前的准备工作</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/02/networkmanager%E9%85%8D%E7%BD%AE%E7%BD%91%E7%BB%9Cteam/">NetworkManager配置网络team</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/06/docker-registry-%E5%AD%98%E5%82%A8%E5%88%B0aliyun-oss/">Docker registry 存储到aliyun oss</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/06/docker-registry/">Docker registry</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/%E4%BD%BF%E7%94%A8letsencrypt/">使用letsencrypt</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/docker-daemon%E7%9A%84http-socket-tls%E5%8A%A0%E5%AF%86%E8%BF%9E%E6%8E%A5/">docker daemon的HTTP socket TLS加密连接</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/docker%E7%9A%84devicemapper-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">docker的devicemapper 最佳实践</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/docker%E9%80%89%E6%8B%A9%E5%AD%98%E5%82%A8%E9%A9%B1%E5%8A%A8%E5%99%A8/">docker选择存储驱动器</a></li>
+		</ul>
+	</div>
+</div>
+
+	
+<div class="widget-categories widget">
+	<h4 class="widget__title">Categories</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/ceph">Ceph</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/docker">Docker</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/java">Java</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/linux">Linux</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/macos">Macos</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/mysql">Mysql</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/oracle">Oracle</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/other">Other</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/postgresql">Postgresql</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/python">Python</a></li>
+		</ul>
+	</div>
+</div>
+	
+<div class="widget-taglist widget">
+	<h4 class="widget__title">Tags</h4>
+	<div class="widget__content">
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/aliyun-oss" title="aliyun-oss">aliyun-oss</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/array" title="array">array</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/backup" title="backup">backup</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/bond" title="bond">bond</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/ceph" title="ceph">ceph</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/comparision" title="comparision">comparision</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/composite-type" title="composite-type">composite-type</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/container" title="container">container</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/database" title="database">database</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/date" title="date">date</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/devicemapper" title="devicemapper">devicemapper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/dict" title="dict">dict</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/dml" title="dml">dml</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/dockerfile" title="dockerfile">dockerfile</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/driect-lvm" title="driect-lvm">driect-lvm</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/enum" title="enum">enum</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/etcd" title="etcd">etcd</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/failover" title="failover">failover</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/firewall" title="firewall">firewall</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/general-query" title="general-query">general-query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/generate_series" title="generate_series">generate_series</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/generate_subscripts" title="generate_subscripts">generate_subscripts</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/ha" title="ha">ha</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/image" title="image">image</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/inheritance" title="inheritance">inheritance</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/install" title="install">install</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/letsencrypt" title="letsencrypt">letsencrypt</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/log" title="log">log</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/logrotate" title="logrotate">logrotate</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/lvm" title="lvm">lvm</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/maven" title="maven">maven</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/mysql-config-editor" title="mysql-config-editor">mysql-config-editor</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/native" title="native">native</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/network" title="network">network</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/nmcli" title="nmcli">nmcli</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/partial-index" title="partial-index">partial-index</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/partition" title="partition">partition</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/partition-table" title="partition-table">partition-table</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/pg_dump" title="pg_dump">pg_dump</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/pgadmin" title="pgadmin">pgadmin</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/pip" title="pip">pip</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/pitr" title="pitr">pitr</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/postgres" title="postgres">postgres</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/postgresql.conf" title="postgresql.conf">postgresql.conf</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/query" title="query">query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/registry" title="registry">registry</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/restore" title="restore">restore</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/role" title="role">role</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/rsync" title="rsync">rsync</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/schema" title="schema">schema</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/serial" title="serial">serial</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/slow-query" title="slow-query">slow-query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/sqldeveloper" title="sqldeveloper">sqldeveloper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/ssh" title="ssh">ssh</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/standby" title="standby">standby</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/storage-driver" title="storage-driver">storage-driver</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/storage-drivers" title="storage-drivers">storage-drivers</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/streaming-replication" title="streaming-replication">streaming-replication</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/string" title="string">string</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/table" title="table">table</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/tablespace" title="tablespace">tablespace</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/team" title="team">team</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/teamdctl" title="teamdctl">teamdctl</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/time" title="time">time</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/timestamp" title="timestamp">timestamp</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/tls" title="tls">tls</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/tomcat" title="tomcat">tomcat</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/transaction-isolation" title="transaction-isolation">transaction-isolation</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/upgrade" title="upgrade">upgrade</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/user" title="user">user</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/virtualenvwrapper" title="virtualenvwrapper">virtualenvwrapper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/volumns" title="volumns">volumns</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/wal" title="wal">wal</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/%e6%95%b0%e5%ad%a6%e5%87%bd%e6%95%b0" title="数学函数">数学函数</a>
+	</div>
+</div>
+</aside>
+	</div>
+		<footer class="footer" itemscope="itemscope" itemtype="http://schema.org/WPFooter">
+			<div class="container container-inner">
+				<p class="footer__copyright">&copy; 2017 河马的池塘. Based on <a href="//wordpress.org/themes/mh-magazine-lite/" target="_blank" rel="nofollow noopener noreferrer">MH Magazine lite</a>.</p>
+			</div>
+		</footer>
+	</div>
+
+<script>
+	var navigation = responsiveNav(".menu", {
+		navClass: "menu--collapse",
+	});
+</script>
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-92973579-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+</body>
+</html>

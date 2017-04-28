@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>postgresql备份恢复之pg_dump大数据处理</title>
+<meta name="description" content="河马的笔记">
+<meta name="generator" content="Hugo 0.20.5" />
+<meta property="og:title" content="postgresql备份恢复之pg_dump大数据处理" />
+<meta property="og:description" content="有时候数据库太大,操作系统又有文件大小限制,该如何处理
+
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://pool.idyi.net/2015/02/postgresql%E5%A4%87%E4%BB%BD%E6%81%A2%E5%A4%8D%E4%B9%8Bpg_dump%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86/" />
+
+
+
+<meta property="article:published_time" content="2015-02-10T16:39:39&#43;08:00"/>
+<meta property="article:modified_time" content="2015-02-10T16:39:39&#43;08:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<link rel="dns-prefetch" href="//fonts.googleapis.com" />
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700" type="text/css" media="all" />
+<link rel="stylesheet" href="http://pool.idyi.netcss/style.css" type="text/css" media="all" />
+<script type="text/javascript" src="http://pool.idyi.netjs/scripts.js"></script>
+</head>
+<body class="body body-right-sidebar mobile" itemscope="itemscope" itemtype="http://schema.org/WebPage">
+	<div class="container container-outer">
+		<header class="header" itemscope="itemscope" itemtype="http://schema.org/WPHeader">
+			<div class="container container-inner clearfix">
+				<div class="logo" role="banner" itemscope="itemscope" itemtype="http://schema.org/Brand">
+					<a class="logo__link" href="http://pool.idyi.net" title="河马的池塘" rel="home">
+						<h1 class="logo__title">河马的池塘</h1>
+						<h2 class="logo__tagline">一些技术笔记</h2>
+					</a>
+				</div>
+			</div>
+			<nav class="menu" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<ul class="menu__list">
+		<li class="menu__item "><a class="menu__link" href="http://pool.idyi.net/about">ABOUT ME</a></li>
+	</ul>
+</nav>
+		</header>
+		<div class="wrapper clearfix">
+
+<div class="main-content content" role="main" itemprop="mainContentOfPage">
+	<article class="post">
+		<header class="post__header clearfix">
+			<h1 class="post__title">postgresql备份恢复之pg_dump大数据处理</h1>
+			<p class="post__meta meta">
+				<svg class="icon icon-time" height="14" viewBox="0 0 16 16" width="14" xmlns="http://www.w3.org/2000/svg"><path d="m8-.0000003c-4.4 0-8 3.6-8 8 0 4.4000003 3.6 8.0000003 8 8.0000003 4.4 0 8-3.6 8-8.0000003 0-4.4-3.6-8-8-8zm0 14.4000003c-3.52 0-6.4-2.88-6.4-6.4000003 0-3.52 2.88-6.4 6.4-6.4 3.52 0 6.4 2.88 6.4 6.4 0 3.5200003-2.88 6.4000003-6.4 6.4000003zm.4-10.4000003h-1.2v4.8l4.16 2.5600003.64-1.04-3.6-2.1600003z"/></svg>
+				<time class="post__meta-date" datetime="2015-02-10 16:39:39 &#43;0800 CST">February 10, 2015</time>
+				<span class="post__meta-categories meta-categories">
+					<svg class="icon icon-category" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m7 2l1 2h8v11h-16v-13z"/></svg>
+					<a class="meta-categories__link" href="http://pool.idyi.net/categories/postgresql" rel="category">postgresql</a></span>
+			</p>
+		</header>
+		<div class="post__content clearfix">
+			<p>有时候数据库太大,操作系统又有文件大小限制,该如何处理</p>
+
+<p></p>
+
+<h2 id="介绍">介绍</h2>
+
+<p>官方文档介绍的主要有三种方式:</p>
+
+<ol>
+<li>通过unix管道,直接读取pg_dump的输出来压缩.</li>
+<li>使用pg_dump的custom-format</li>
+<li>使用pg_dump的directory-format</li>
+</ol>
+
+<h2 id="使用管道压缩和解压">使用管道压缩和解压</h2>
+
+<p><strong>由于pg_dump工具可以输出到标准输出,可以使用unix管道来直接压缩</strong></p>
+
+<p><em>1.压缩方法</em></p>
+
+<pre><code>[postgres@fnddb ~]$ pg_dump database1 | gzip &gt; database1.sql.gz  
+</code></pre>
+
+<p><em>还原</em></p>
+
+<pre><code>[postgres@fnddb ~]$ createdb -T template0 testdb1
+[postgres@fnddb ~]$ gunzip -c database1.sql.gz | psql testdb1
+......
+</code></pre>
+
+<p><em>2.切分</em></p>
+
+<p><em>切分文件</em></p>
+
+<pre><code>[postgres@fnddb ~]$ pg_dump database1 | split -b 1k - database1.sql
+[postgres@fnddb ~]$ ll
+total 16
+-rw-rw-r--. 1 postgres postgres 1024 Feb 10 21:46 database1.sqlaa
+-rw-rw-r--. 1 postgres postgres 1024 Feb 10 21:46 database1.sqlab
+-rw-rw-r--. 1 postgres postgres   35 Feb 10 21:46 database1.sqlac
+</code></pre>
+
+<p><em>还原</em></p>
+
+<pre><code>[postgres@fnddb ~]$ cat database1.sql* | psql testdb1
+</code></pre>
+
+<h2 id="custom-format">custom-format</h2>
+
+<p>记得编译安装时提示zlib库没有安装,custom-dump format会使用zlib库压缩输出文件<br />
+当然这不是文本文件,恢复需要使用pg_restore命来来恢复.</p>
+
+<pre><code>[postgres@fnddb ~]$ pg_dump -Fc database1 -f database1.c.dump
+[postgres@fnddb ~]$ file database1.c.dump 
+database1.c.dump: PostgreSQL custom database dump - v1.12-0
+</code></pre>
+
+<p><em>还原</em></p>
+
+<pre><code>[postgres@fnddb ~]$ createdb -T template0 testdb1
+[postgres@fnddb ~]$ pg_restore -d testdb1 database1.c.dump 
+</code></pre>
+
+<p><strong>可以只恢复自己感兴趣的对象</strong></p>
+
+<pre><code>[postgres@fnddb ~]$ pg_restore -l database1.c.dump &gt; database1.c.dump.list
+[postgres@fnddb ~]$ vi database1.c.dump.list 
+;
+; Archive created at Tue Feb 10 22:02:23 2015
+;     dbname: database1
+;     TOC Entries: 16
+;     Compression: -1
+;     Dump Version: 1.12-0
+;     Format: CUSTOM
+;     Integer: 4 bytes
+;     Offset: 8 bytes
+;     Dumped from database version: 9.4.1
+;     Dumped by pg_dump version: 9.4.1
+;
+;
+; Selected TOC Entries:
+;
+;2872; 1262 16411 DATABASE - database1 hippo
+;6; 2615 2200 SCHEMA - public postgres
+;2873; 0 0 COMMENT - SCHEMA public postgres
+;2874; 0 0 ACL - public postgres
+;175; 3079 12723 EXTENSION - plpgsql
+;2875; 0 0 COMMENT - EXTENSION plpgsql
+174; 1259 16544 TABLE public t3 hippo
+;172; 1259 16512 TABLE public tab2 postgres
+;2876; 0 0 ACL public tab2 postgres
+;173; 1259 16524 TABLE public tab3 postgres
+;2877; 0 0 ACL public tab3 postgres
+2867; 0 16544 TABLE DATA public t3 hippo
+;2865; 0 16512 TABLE DATA public tab2 postgres
+;2866; 0 16524 TABLE DATA public tab3 postgres
+</code></pre>
+
+<p><em>只需要将不需要恢复的对象使用;注释掉就可以了,然后还原带上此列表</em></p>
+
+<pre><code>[postgres@fnddb ~]$ createdb -T template0 testdb2
+[postgres@fnddb ~]$ pg_restore -L database1.c.dump.list -d testdb2 database1.c.dump
+[postgres@fnddb ~]$ psql testdb2
+psql (9.4.1)
+Type &quot;help&quot; for help.
+
+testdb2=# \dt
+       List of relations
+ Schema | Name | Type  | Owner 
+--------+------+-------+-------
+ public | t3   | table | hippo
+(1 row)
+
+testdb2=# select * from t3;
+  id   
+-------
+ t3
+ user3
+(2 rows)
+</code></pre>
+
+<h2 id="directory-format">directory-format</h2>
+
+<p>这种模式可以使用pg的多个工作进程.可以极大增强导出大数据库的效率.<br />
+这种模式同一时间导出多个表.也就是并行导出,当然对服务器资源消耗也比较高,不要在高峰时刻进行.
+它输出不是一个文件,需要首先创建一个目录</p>
+
+<pre><code>[postgres@fnddb ~]$ mkdir db.dir
+[postgres@fnddb ~]$ pg_dump -Fd -j4 -f db.dir database1
+[postgres@fnddb ~]$ ls db.dir
+2865.dat.gz  2866.dat.gz  2867.dat.gz  toc.dat
+[postgres@fnddb ~]$ cd db.dir
+[postgres@fnddb db.dir]$ cat 2866.dat.gz |gunzip 
+\.
+
+
+[postgres@fnddb db.dir]$ cat 2867.dat.gz |gunzip 
+t3
+user3
+t3
+user3
+t3
+user3
+\.
+
+
+[postgres@fnddb db.dir]$ file toc.dat
+toc.dat: PostgreSQL custom database dump - v1.12-0
+</code></pre>
+
+<blockquote>
+<p>看结果因该是pg_dump导出了一个custom-format格式的数据库结构信息.<br />
+同时将每一个表的数据分别导出到一个压缩文件.恢复使用copy命令可读取的格式
+-j参数指定同时几个进程来同时执行..每个进程同时只处理一个表的数据.</p>
+</blockquote>
+
+<p><strong>恢复</strong></p>
+
+<pre><code>[postgres@fnddb ~]$ createdb -T template0 testdb3
+[postgres@fnddb ~]$ pg_restore -d testdb3 -j4 db.dir
+</code></pre>
+
+<blockquote>
+<p>-j参数指定并发的数量(job),pg_restore恢复custom-format格式也可以使用此参数,并非只适用directory-format</p>
+</blockquote>
+
+<h2 id="其他一些参数简单说明">其他一些参数简单说明</h2>
+
+<p><strong>pg_dump和pg_restore很多参数都很类似.</strong></p>
+
+<p>-n schema  |-N schema         &ndash;只导出(恢复)某个schema|排除某个schema,例子见-t table<br />
+-t table | -T table          &ndash;导出(恢复)某个表|排除某个表</p>
+
+<pre><code>[postgres@fnddb ~]$ pg_dump -t t3 database1 | grep -i &quot;create table&quot;
+CREATE TABLE t3 (
+[postgres@fnddb ~]$ pg_dump -T t3 database1 | grep -i &quot;create table&quot;
+CREATE TABLE tab2 (
+CREATE TABLE tab3 (
+</code></pre>
+
+<p>&ndash;inserts         &ndash;导出成insert 语句,导入时性能很差,主要为了迁移到其他数据库使用</p>
+
+<pre><code>[postgres@fnddb ~]$ pg_dump database1 | grep -A3 -i &quot;copy&quot;
+COPY t3 (id) FROM stdin;
+t3
+user3
+t3
+......
+[postgres@fnddb ~]$ pg_dump --inserts database1 | grep -i &quot;insert&quot;
+INSERT INTO t3 VALUES ('t3');
+INSERT INTO t3 VALUES ('user3');
+......
+</code></pre>
+
+<p>-a        &ndash;只导出数据,不导结构</p>
+
+<pre><code>[postgres@fnddb ~]$ pg_dump database1 | grep -i &quot;create table&quot;
+CREATE TABLE t3 (
+CREATE TABLE tab2 (
+CREATE TABLE tab3 (
+[postgres@fnddb ~]$ pg_dump -a database1 | grep -i &quot;create table&quot;
+</code></pre>
+
+<p>-c        &ndash;包括drop 对象的语句进去,最好附带&ndash;if-exists参数,否则导入时会报一些对象不存在的错误,虽然无关紧要</p>
+
+<pre><code>[postgres@fnddb ~]$ pg_dump database1 | grep -i drop 
+[postgres@fnddb ~]$ pg_dump -c database1 | grep -i drop 
+DROP TABLE public.tab3;
+DROP TABLE public.tab2;
+DROP TABLE public.t3;
+DROP EXTENSION plpgsql;
+DROP SCHEMA public;
+</code></pre>
+
+<p>-C        &ndash;包含创建数据库的语句</p>
+
+<pre><code>[postgres@fnddb ~]$ pg_dump database1 | grep -i &quot;create database&quot;
+[postgres@fnddb ~]$ pg_dump -C database1 | grep -i &quot;create database&quot;
+CREATE DATABASE database1 WITH TEMPLATE = template0 ENCODING = 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TABLESPACE = ts01;
+</code></pre>
+
+<p><em>其他参数可以通过官方文档或者pg_dump &ndash;help来查看</em></p>
+
+<p>//END</p>
+		</div>
+		
+<div class="post__tags tags clearfix">
+	<svg class="icon icon-tag" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="m4.73135 3.3795002q0-.5597-.39604-.9557-.39604-.3961-.95577-.3961-.55974 0-.95578.3961-.39604.396-.39604.9557 0 .5598.39604.9558.39604.3961.95578.3961.55973 0 .95577-.3961.39604-.396.39604-.9558zm11.26865 6.0832q0 .5596998-.39076.9504998l-5.18548 5.196q-.41188.3908-.9610504.3908-.55974 0-.9505-.3908l-7.5511496-7.5616998q-.40132-.3907-.68119-1.0666-.27987-.6759-.27987-1.2357v-4.3934q0-.54920004.40132-.95050004.40132-.4013.9505-.4013h4.39339q.55974 0 1.23565.2799.67591.2798 1.07723.6812l7.55115 7.54060004q.39076.4118.39076.961z"/></svg>
+	<ul class="tags__list">
+		<li class="tags__item"><a class="tags__link" href="http://pool.idyi.net/tags/pg_dump/" rel="tag">pg_dump</a></li>
+	</ul>
+</div>
+
+	</article>
+	
+<div class="authorbox clearfix">
+	<figure class="authorbox__avatar">
+		<img alt="Hippo avatar" src="http://pool.idyi.net/img/avatar.jpg" class="avatar" height="90" width="90">
+	</figure>
+	<div class="authorbox__header">
+		<span class="authorbox__name">About Hippo</span>
+	</div>
+	<div class="authorbox__description">
+		Hippo&#39;s true identity is unknown. Maybe he is a successful blogger or writer. Nobody knows it.
+	</div>
+</div>
+	
+<nav class="post-nav row clearfix" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<div class="post-nav__item post-nav__item--prev col-1-2">
+		<a class="post-nav__link" href="http://pool.idyi.net/2015/02/postgresql%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E4%B9%8Bsql-dump/" rel="prev"><span class="post-nav__caption">«Previous</span><p class="post-nav__post-title">postgresql备份与恢复之SQL Dump</p></a>
+	</div>
+	<div class="post-nav__item post-nav__item--next col-1-2">
+		<a class="post-nav__link" href="http://pool.idyi.net/2015/02/postgresql-%E4%BF%AE%E6%94%B9%E6%97%A5%E5%BF%97%E8%BE%93%E5%87%BA/" rel="next"><span class="post-nav__caption">Next»</span><p class="post-nav__post-title">postgresql 修改日志输出</p></a>
+	</div>
+</nav>
+
+	
+<div class="comments">
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'hippool';
+    var disqus_identifier = 'http:\/\/pool.idyi.net\/2015\/02\/postgresql%E5%A4%87%E4%BB%BD%E6%81%A2%E5%A4%8D%E4%B9%8Bpg_dump%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86\/';
+    var disqus_title = 'postgresql备份恢复之pg_dump大数据处理';
+    var disqus_url = 'http:\/\/pool.idyi.net\/2015\/02\/postgresql%E5%A4%87%E4%BB%BD%E6%81%A2%E5%A4%8D%E4%B9%8Bpg_dump%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+</div>
+
+<aside class="sidebar" itemscope="itemscope" itemtype="http://schema.org/WPSideBar">
+	
+<div class="widget-search widget">
+	<form class="widget-search__form" role="search" method="get" action="//google.com/search">
+		<label>
+			<span class="screen-reader-text">Search for:</span>
+			<input class="widget-search__field" type="search" placeholder="SEARCH..." value="" name="q">
+		</label>
+		<input class="widget-search__submit" type="submit" value="Search">
+		<input type="hidden" name="sitesearch" value="http://pool.idyi.net" />
+	</form>
+</div>
+	
+<div class="widget-recent widget">
+	<h4 class="widget__title">Recent Posts</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph%E5%AE%89%E8%A3%85%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98/">ceph安装中遇到的问题</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph-%E5%AE%89%E8%A3%85/">ceph 安装</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph-%E5%AE%89%E8%A3%85%E5%89%8D%E7%9A%84%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C/">ceph 安装前的准备工作</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/02/networkmanager%E9%85%8D%E7%BD%AE%E7%BD%91%E7%BB%9Cteam/">NetworkManager配置网络team</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/06/docker-registry-%E5%AD%98%E5%82%A8%E5%88%B0aliyun-oss/">Docker registry 存储到aliyun oss</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/06/docker-registry/">Docker registry</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/%E4%BD%BF%E7%94%A8letsencrypt/">使用letsencrypt</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/docker-daemon%E7%9A%84http-socket-tls%E5%8A%A0%E5%AF%86%E8%BF%9E%E6%8E%A5/">docker daemon的HTTP socket TLS加密连接</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/docker%E7%9A%84devicemapper-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">docker的devicemapper 最佳实践</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/docker%E9%80%89%E6%8B%A9%E5%AD%98%E5%82%A8%E9%A9%B1%E5%8A%A8%E5%99%A8/">docker选择存储驱动器</a></li>
+		</ul>
+	</div>
+</div>
+
+	
+<div class="widget-categories widget">
+	<h4 class="widget__title">Categories</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/ceph">Ceph</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/docker">Docker</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/java">Java</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/linux">Linux</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/macos">Macos</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/mysql">Mysql</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/oracle">Oracle</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/other">Other</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/postgresql">Postgresql</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/python">Python</a></li>
+		</ul>
+	</div>
+</div>
+	
+<div class="widget-taglist widget">
+	<h4 class="widget__title">Tags</h4>
+	<div class="widget__content">
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/aliyun-oss" title="aliyun-oss">aliyun-oss</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/array" title="array">array</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/backup" title="backup">backup</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/bond" title="bond">bond</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/ceph" title="ceph">ceph</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/comparision" title="comparision">comparision</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/composite-type" title="composite-type">composite-type</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/container" title="container">container</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/database" title="database">database</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/date" title="date">date</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/devicemapper" title="devicemapper">devicemapper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/dict" title="dict">dict</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/dml" title="dml">dml</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/dockerfile" title="dockerfile">dockerfile</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/driect-lvm" title="driect-lvm">driect-lvm</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/enum" title="enum">enum</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/etcd" title="etcd">etcd</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/failover" title="failover">failover</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/firewall" title="firewall">firewall</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/general-query" title="general-query">general-query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/generate_series" title="generate_series">generate_series</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/generate_subscripts" title="generate_subscripts">generate_subscripts</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/ha" title="ha">ha</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/image" title="image">image</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/inheritance" title="inheritance">inheritance</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/install" title="install">install</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/letsencrypt" title="letsencrypt">letsencrypt</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/log" title="log">log</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/logrotate" title="logrotate">logrotate</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/lvm" title="lvm">lvm</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/maven" title="maven">maven</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/mysql-config-editor" title="mysql-config-editor">mysql-config-editor</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/native" title="native">native</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/network" title="network">network</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/nmcli" title="nmcli">nmcli</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/partial-index" title="partial-index">partial-index</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/partition" title="partition">partition</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/partition-table" title="partition-table">partition-table</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/pg_dump" title="pg_dump">pg_dump</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/pgadmin" title="pgadmin">pgadmin</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/pip" title="pip">pip</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/pitr" title="pitr">pitr</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/postgres" title="postgres">postgres</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/postgresql.conf" title="postgresql.conf">postgresql.conf</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/query" title="query">query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/registry" title="registry">registry</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/restore" title="restore">restore</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/role" title="role">role</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/rsync" title="rsync">rsync</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/schema" title="schema">schema</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/serial" title="serial">serial</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/slow-query" title="slow-query">slow-query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/sqldeveloper" title="sqldeveloper">sqldeveloper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/ssh" title="ssh">ssh</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/standby" title="standby">standby</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/storage-driver" title="storage-driver">storage-driver</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/storage-drivers" title="storage-drivers">storage-drivers</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/streaming-replication" title="streaming-replication">streaming-replication</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/string" title="string">string</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/table" title="table">table</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/tablespace" title="tablespace">tablespace</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/team" title="team">team</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/teamdctl" title="teamdctl">teamdctl</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/time" title="time">time</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/timestamp" title="timestamp">timestamp</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/tls" title="tls">tls</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/tomcat" title="tomcat">tomcat</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/transaction-isolation" title="transaction-isolation">transaction-isolation</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/upgrade" title="upgrade">upgrade</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/user" title="user">user</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/virtualenvwrapper" title="virtualenvwrapper">virtualenvwrapper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/volumns" title="volumns">volumns</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/wal" title="wal">wal</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/%e6%95%b0%e5%ad%a6%e5%87%bd%e6%95%b0" title="数学函数">数学函数</a>
+	</div>
+</div>
+</aside>
+	</div>
+		<footer class="footer" itemscope="itemscope" itemtype="http://schema.org/WPFooter">
+			<div class="container container-inner">
+				<p class="footer__copyright">&copy; 2017 河马的池塘. Based on <a href="//wordpress.org/themes/mh-magazine-lite/" target="_blank" rel="nofollow noopener noreferrer">MH Magazine lite</a>.</p>
+			</div>
+		</footer>
+	</div>
+
+<script>
+	var navigation = responsiveNav(".menu", {
+		navClass: "menu--collapse",
+	});
+</script>
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-92973579-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+</body>
+</html>

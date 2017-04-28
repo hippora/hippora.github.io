@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>docker管理容器的数据(VOLUMNS)</title>
+<meta name="description" content="河马的笔记">
+<meta name="generator" content="Hugo 0.20.5" />
+<meta property="og:title" content="docker管理容器的数据(VOLUMNS)" />
+<meta property="og:description" content="可以通过两种方式管理容器中的数据,数据卷(Data Volumns),数据卷容器(Data Volumns containers)
+
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://pool.idyi.net/2016/05/docker%E7%AE%A1%E7%90%86%E5%AE%B9%E5%99%A8%E7%9A%84%E6%95%B0%E6%8D%AEvolumns/" />
+
+
+
+<meta property="article:published_time" content="2016-05-23T11:28:14&#43;08:00"/>
+<meta property="article:modified_time" content="2016-05-23T11:28:14&#43;08:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<link rel="dns-prefetch" href="//fonts.googleapis.com" />
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700" type="text/css" media="all" />
+<link rel="stylesheet" href="http://pool.idyi.netcss/style.css" type="text/css" media="all" />
+<script type="text/javascript" src="http://pool.idyi.netjs/scripts.js"></script>
+</head>
+<body class="body body-right-sidebar mobile" itemscope="itemscope" itemtype="http://schema.org/WebPage">
+	<div class="container container-outer">
+		<header class="header" itemscope="itemscope" itemtype="http://schema.org/WPHeader">
+			<div class="container container-inner clearfix">
+				<div class="logo" role="banner" itemscope="itemscope" itemtype="http://schema.org/Brand">
+					<a class="logo__link" href="http://pool.idyi.net" title="河马的池塘" rel="home">
+						<h1 class="logo__title">河马的池塘</h1>
+						<h2 class="logo__tagline">一些技术笔记</h2>
+					</a>
+				</div>
+			</div>
+			<nav class="menu" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<ul class="menu__list">
+		<li class="menu__item "><a class="menu__link" href="http://pool.idyi.net/about">ABOUT ME</a></li>
+	</ul>
+</nav>
+		</header>
+		<div class="wrapper clearfix">
+
+<div class="main-content content" role="main" itemprop="mainContentOfPage">
+	<article class="post">
+		<header class="post__header clearfix">
+			<h1 class="post__title">docker管理容器的数据(VOLUMNS)</h1>
+			<p class="post__meta meta">
+				<svg class="icon icon-time" height="14" viewBox="0 0 16 16" width="14" xmlns="http://www.w3.org/2000/svg"><path d="m8-.0000003c-4.4 0-8 3.6-8 8 0 4.4000003 3.6 8.0000003 8 8.0000003 4.4 0 8-3.6 8-8.0000003 0-4.4-3.6-8-8-8zm0 14.4000003c-3.52 0-6.4-2.88-6.4-6.4000003 0-3.52 2.88-6.4 6.4-6.4 3.52 0 6.4 2.88 6.4 6.4 0 3.5200003-2.88 6.4000003-6.4 6.4000003zm.4-10.4000003h-1.2v4.8l4.16 2.5600003.64-1.04-3.6-2.1600003z"/></svg>
+				<time class="post__meta-date" datetime="2016-05-23 11:28:14 &#43;0800 CST">May 23, 2016</time>
+				<span class="post__meta-categories meta-categories">
+					<svg class="icon icon-category" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m7 2l1 2h8v11h-16v-13z"/></svg>
+					<a class="meta-categories__link" href="http://pool.idyi.net/categories/docker" rel="category">docker</a></span>
+			</p>
+		</header>
+		<div class="post__content clearfix">
+			<p>可以通过两种方式管理容器中的数据,数据卷(Data Volumns),数据卷容器(Data Volumns containers)</p>
+
+<p></p>
+
+<h2 id="数据卷-data-volumns">数据卷(Data Volumns)</h2>
+
+<h3 id="概念">概念:</h3>
+
+<p><code>data volume</code>存在一个或多个容器中的特殊的目录,它绕过容器的<code>Union File System</code>.用来持久或共享数据.它是独立于容器的生命周期的. 它有几个特点:</p>
+
+<ol>
+<li>容器创建好后会初始化数据卷.如果基础镜像在此挂载点上有数据,它会将数据复制到数据卷里.(挂在主机的目录则不会复制)</li>
+<li>数据卷可以被多个容器共享使用</li>
+<li>对数据卷的修改是直接的.</li>
+<li>对数据卷的更改,不会因为你更新镜像而被包括进去.</li>
+<li>就算容器被删除,数据卷还继续存在.</li>
+</ol>
+
+<h3 id="添加数据卷">添加数据卷</h3>
+
+<pre><code>[root@srv00 ~]# docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+hippo/nginx         v1                  2e1513eeaa0a        2 days ago          281.1 MB
+hippo/nginx         v1.10               1e20546f8434        2 days ago          281.1 MB
+[root@srv00 ~]# docker run -it -v /etc/nginx hippo/nginx:v1.10
+[root@bab2e5725220 /]# ll /etc/nginx/
+total 32
+drwxr-xr-x 2 root root   25 May 20 07:40 conf.d
+...
+</code></pre>
+
+<blockquote>
+<p>可以看到容器内的数据卷目录中,是原有的<code>/etc/nginx</code>目录的内容.</p>
+</blockquote>
+
+<p>可以修改一个文件配置看看.并检查主机上对应的数据卷内容.</p>
+
+<pre><code>[root@srv00 ~]# docker ps -a
+CONTAINER ID        IMAGE               COMMAND                  CREATED              STATUS                      PORTS                   NAMES
+bab2e5725220        hippo/nginx:v1.10   &quot;/bin/bash&quot;              About a minute ago   Exited (0) 15 seconds ago                           hungry_jennings
+[root@srv00 ~]# docker inspect bab2e5725220
+...
+        &quot;Mounts&quot;: [
+            {
+                &quot;Name&quot;: &quot;b6c506a65d5f495ca6ce06aeb30bb6472295d459bfbeb464e89681e17ffe3541&quot;,
+                &quot;Source&quot;: &quot;/var/lib/docker/volumes/b6c506a65d5f495ca6ce06aeb30bb6472295d459bfbeb464e89681e17ffe3541/_data&quot;,
+                &quot;Destination&quot;: &quot;/etc/nginx&quot;,
+                &quot;Driver&quot;: &quot;local&quot;,
+                &quot;Mode&quot;: &quot;&quot;,
+                &quot;RW&quot;: true,
+                &quot;Propagation&quot;: &quot;&quot;
+            }
+...
+
+[root@srv00 _data]# docker rm bab2e5725220
+bab2e5725220
+[root@srv00 ~]# cat /var/lib/docker/volumes/b6c506a65d5f495ca6ce06aeb30bb6472295d459bfbeb464e89681e17ffe3541/_data/nginx.conf
+...
+</code></pre>
+
+<blockquote>
+<p>对数据卷的修改直接持久在主机对应的地方..就算容器已经关闭或删除.</p>
+</blockquote>
+
+<h3 id="挂载主机目录">挂载主机目录</h3>
+
+<pre><code>[root@srv00 ~]# mkdir nginx
+[root@srv00 ~]# docker run -it -v /root/nginx:/etc/nginx hippo/nginx:v1.10
+[root@c0750f9779b3 /]# ll /etc/nginx/  &lt;===无内容
+[root@srv00 ~]# docker ps -l
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS                          PORTS                   NAMES
+c0750f9779b3        hippo/nginx:v1.10   &quot;/bin/bash&quot;              23 seconds ago      Exited (0) 11 seconds ago                               agitated_mclean
+[root@srv00 ~]# docker inspect c0750f9779b3
+...
+        &quot;Mounts&quot;: [
+            {
+                &quot;Source&quot;: &quot;/root/nginx&quot;,
+                &quot;Destination&quot;: &quot;/etc/nginx&quot;,
+                &quot;Mode&quot;: &quot;&quot;,
+                &quot;RW&quot;: true,
+                &quot;Propagation&quot;: &quot;rprivate&quot;
+            }
+...
+</code></pre>
+
+<blockquote>
+<p>可以看到是主机的对应目录挂载到容器内.<code>RW</code>是可读写标志,效果和mount命令一致.</p>
+</blockquote>
+
+<p>如果是相对目录:</p>
+
+<pre><code>[root@srv00 ~]# mkdir -p a/b
+[root@srv00 ~]# touch a/b/c
+[root@srv00 ~]# docker run -it -v a/b:/etc/nginx hippo/nginx:v1.10
+docker: Error response from daemon: create a/b: &quot;a/b&quot; includes invalid characters for a local volume name, only &quot;[a-zA-Z0-9][a-zA-Z0-9_.-]&quot; are allowed.
+See 'docker run --help'.
+[root@srv00 ~]# docker run -it -v nginx:/etc/nginx hippo/nginx:v1.10
+e4e2f137a7412f6474018e88985e2f605b5f77f2cd1ce27280142994e5feb030
+[root@srv00 ~]# docker inspect e4e2f137a7412f6474018e88985e2f605b5f77f2cd1ce27280142994e5feb030
+...
+        &quot;Mounts&quot;: [
+            {
+                &quot;Name&quot;: &quot;nginx&quot;,
+                &quot;Source&quot;: &quot;/var/lib/docker/volumes/nginx/_data&quot;,
+                &quot;Destination&quot;: &quot;/etc/nginx&quot;,
+                &quot;Driver&quot;: &quot;local&quot;,
+                &quot;Mode&quot;: &quot;z&quot;,
+                &quot;RW&quot;: true,
+                &quot;Propagation&quot;: &quot;rprivate&quot;
+            }
+...
+</code></pre>
+
+<blockquote>
+<p>主机不可以指定相对目录,只可以对数据卷命名.</p>
+</blockquote>
+
+<p>当然你可以以只读方式挂载.</p>
+
+<pre><code>[root@srv00 ~]# docker run -itd -v nginx:/etc/nginx:ro hippo/nginx:v1.10
+b0a67f835eaac812ab37086bef05be6b0726ba080d73113221a5cf8a25bfb513
+[root@srv00 ~]# docker inspect b0a67f835eaac812ab37086bef05be6b0726ba080d73113221a5cf8a25bfb513
+...
+        &quot;Mounts&quot;: [
+            {
+                &quot;Name&quot;: &quot;nginx&quot;,
+                &quot;Source&quot;: &quot;/var/lib/docker/volumes/nginx/_data&quot;,
+                &quot;Destination&quot;: &quot;/etc/nginx&quot;,
+                &quot;Driver&quot;: &quot;local&quot;,
+                &quot;Mode&quot;: &quot;ro&quot;,
+                &quot;RW&quot;: false,
+                &quot;Propagation&quot;: &quot;rprivate&quot;
+            }
+  ...
+</code></pre>
+
+<h3 id="单独创建数据卷">单独创建数据卷</h3>
+
+<p>之前都是通过运行容器的同时创建数据卷.当然也可以先创建好数据卷.然后挂载到容器中使用.
+数据卷管理使用<code>docker volume</code>命令.我们看一下刚才创建了哪些数据卷.</p>
+
+<pre><code>[root@srv00 ~]# docker volume ls
+DRIVER              VOLUME NAME
+local               0159a70ae1a86b5c2947d323b5e6d539101770b66af5cb0ba6d87c12a1c2c742
+local               b6c506a65d5f495ca6ce06aeb30bb6472295d459bfbeb464e89681e17ffe3541
+local               nginx
+[root@srv00 ~]# docker volume inspect 0159a70ae1a86b5c2947d323b5e6d539101770b66af5cb0ba6d87c12a1c2c742
+[
+    {
+        &quot;Name&quot;: &quot;0159a70ae1a86b5c2947d323b5e6d539101770b66af5cb0ba6d87c12a1c2c742&quot;,
+        &quot;Driver&quot;: &quot;local&quot;,
+        &quot;Mountpoint&quot;: &quot;/var/lib/docker/volumes/0159a70ae1a86b5c2947d323b5e6d539101770b66af5cb0ba6d87c12a1c2c742/_data&quot;,
+        &quot;Labels&quot;: null
+    }
+]
+[root@srv00 ~]# docker volume inspect nginx
+[
+    {
+        &quot;Name&quot;: &quot;nginx&quot;,
+        &quot;Driver&quot;: &quot;local&quot;,
+        &quot;Mountpoint&quot;: &quot;/var/lib/docker/volumes/nginx/_data&quot;,
+        &quot;Labels&quot;: null
+    }
+]
+</code></pre>
+
+<blockquote>
+<p><code>Driver</code>是local,就是映射到本地主机.也可以使用其他驱动.映射到比如iscsi,NFS,FC 等共享磁盘上.</p>
+</blockquote>
+
+<p>我们来单独创建一个数据卷并使用</p>
+
+<pre><code>[root@srv00 ~]# docker volume create --name dbdata
+dbdata
+[root@srv00 ~]# docker volume ls
+DRIVER              VOLUME NAME
+local               0159a70ae1a86b5c2947d323b5e6d539101770b66af5cb0ba6d87c12a1c2c742
+local               b6c506a65d5f495ca6ce06aeb30bb6472295d459bfbeb464e89681e17ffe3541
+local               dbdata
+local               nginx
+[root@srv00 ~]# docker volume inspect dbdata
+[
+    {
+        &quot;Name&quot;: &quot;dbdata&quot;,
+        &quot;Driver&quot;: &quot;local&quot;,
+        &quot;Mountpoint&quot;: &quot;/var/lib/docker/volumes/dbdata/_data&quot;,
+        &quot;Labels&quot;: {}
+    }
+]
+[root@srv00 ~]# docker run -itd -v dbdata:/etc/nginx hippo/nginx:v1.10
+</code></pre>
+
+<h2 id="数据卷容器-data-volumns-containers">数据卷容器(Data Volumns containers)</h2>
+
+<p>我们先创建个数据卷容器.然后运行两个单独的容器,挂载数据卷容器.</p>
+
+<pre><code>[root@srv00 ~]# docker create -v /opt --name datastore centos
+e5c37981c4f9e16f92b0d5215f5dfa5f79c86282e3018435a5e380350a5cce2c
+[root@srv00 ~]# docker ps -l
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+e5c37981c4f9        centos              &quot;/bin/bash&quot;         11 seconds ago      Created                                 datastore
+[root@srv00 ~]# docker run -itd --volumes-from datastore --name db1 centos
+[root@srv00 ~]# docker run -itd --volumes-from datastore --name db2 centos
+</code></pre>
+
+<p>看看数据是否互相可访问.</p>
+
+<pre><code>[root@srv00 ~]# docker exec -it db1 /bin/bash
+[root@cd8fa62d3b29 ~]# echo &quot;db111111&quot; &gt; /opt/txt
+[root@cd8fa62d3b29 ~]# exit
+exit
+[root@srv00 ~]# docker exec -it db2 /bin/bash
+[root@72c21395c72b /]# cat /opt/txt
+db111111
+[root@72c21395c72b /]# exit
+exit
+[root@srv00 ~]# docker inspect datastore
+[root@srv00 ~]# docker inspect db1
+[root@srv00 ~]# docker inspect db2
+...
+        &quot;Mounts&quot;: [
+            {
+                &quot;Name&quot;: &quot;6b650687d6d2a448006dcb2b966b5f69bb31d34cf3e93f5e3c3460b6fd6eea4a&quot;,
+                &quot;Source&quot;: &quot;/var/lib/docker/volumes/6b650687d6d2a448006dcb2b966b5f69bb31d34cf3e93f5e3c3460b6fd6eea4a/_data&quot;,
+                &quot;Destination&quot;: &quot;/opt&quot;,
+                &quot;Driver&quot;: &quot;local&quot;,
+                &quot;Mode&quot;: &quot;&quot;,
+                &quot;RW&quot;: true,
+                &quot;Propagation&quot;: &quot;&quot;
+            }
+...
+[root@srv00 ~]# docker volume inspect 6b650687d6d2a448006dcb2b966b5f69bb31d34cf3e93f5e3c3460b6fd6eea4a
+[
+    {
+        &quot;Name&quot;: &quot;6b650687d6d2a448006dcb2b966b5f69bb31d34cf3e93f5e3c3460b6fd6eea4a&quot;,
+        &quot;Driver&quot;: &quot;local&quot;,
+        &quot;Mountpoint&quot;: &quot;/var/lib/docker/volumes/6b650687d6d2a448006dcb2b966b5f69bb31d34cf3e93f5e3c3460b6fd6eea4a/_data&quot;,
+        &quot;Labels&quot;: null
+    }
+]
+</code></pre>
+
+<blockquote>
+<p>几个容器挂在的数据卷都是相同的.内部其实是创建了一个数据卷.
+就算删除所有相关的运行的容器..数据卷不会删除.</p>
+</blockquote>
+
+<p>//END</p>
+		</div>
+		
+<div class="post__tags tags clearfix">
+	<svg class="icon icon-tag" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="m4.73135 3.3795002q0-.5597-.39604-.9557-.39604-.3961-.95577-.3961-.55974 0-.95578.3961-.39604.396-.39604.9557 0 .5598.39604.9558.39604.3961.95578.3961.55973 0 .95577-.3961.39604-.396.39604-.9558zm11.26865 6.0832q0 .5596998-.39076.9504998l-5.18548 5.196q-.41188.3908-.9610504.3908-.55974 0-.9505-.3908l-7.5511496-7.5616998q-.40132-.3907-.68119-1.0666-.27987-.6759-.27987-1.2357v-4.3934q0-.54920004.40132-.95050004.40132-.4013.9505-.4013h4.39339q.55974 0 1.23565.2799.67591.2798 1.07723.6812l7.55115 7.54060004q.39076.4118.39076.961z"/></svg>
+	<ul class="tags__list">
+		<li class="tags__item"><a class="tags__link" href="http://pool.idyi.net/tags/volumns/" rel="tag">volumns</a></li>
+	</ul>
+</div>
+
+	</article>
+	
+<div class="authorbox clearfix">
+	<figure class="authorbox__avatar">
+		<img alt="Hippo avatar" src="http://pool.idyi.net/img/avatar.jpg" class="avatar" height="90" width="90">
+	</figure>
+	<div class="authorbox__header">
+		<span class="authorbox__name">About Hippo</span>
+	</div>
+	<div class="authorbox__description">
+		Hippo&#39;s true identity is unknown. Maybe he is a successful blogger or writer. Nobody knows it.
+	</div>
+</div>
+	
+<nav class="post-nav row clearfix" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<div class="post-nav__item post-nav__item--prev col-1-2">
+		<a class="post-nav__link" href="http://pool.idyi.net/2016/05/docker%E7%9A%84%E7%BD%91%E7%BB%9C/" rel="prev"><span class="post-nav__caption">«Previous</span><p class="post-nav__post-title">docker的网络</p></a>
+	</div>
+	<div class="post-nav__item post-nav__item--next col-1-2">
+		<a class="post-nav__link" href="http://pool.idyi.net/2016/05/docker%E9%95%9C%E5%83%8F%E5%AE%B9%E5%99%A8%E5%92%8C%E5%AD%98%E5%82%A8%E9%A9%B1%E5%8A%A8/" rel="next"><span class="post-nav__caption">Next»</span><p class="post-nav__post-title">docker镜像,容器和存储驱动</p></a>
+	</div>
+</nav>
+
+	
+<div class="comments">
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'hippool';
+    var disqus_identifier = 'http:\/\/pool.idyi.net\/2016\/05\/docker%E7%AE%A1%E7%90%86%E5%AE%B9%E5%99%A8%E7%9A%84%E6%95%B0%E6%8D%AEvolumns\/';
+    var disqus_title = 'docker管理容器的数据(VOLUMNS)';
+    var disqus_url = 'http:\/\/pool.idyi.net\/2016\/05\/docker%E7%AE%A1%E7%90%86%E5%AE%B9%E5%99%A8%E7%9A%84%E6%95%B0%E6%8D%AEvolumns\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+</div>
+
+<aside class="sidebar" itemscope="itemscope" itemtype="http://schema.org/WPSideBar">
+	
+<div class="widget-search widget">
+	<form class="widget-search__form" role="search" method="get" action="//google.com/search">
+		<label>
+			<span class="screen-reader-text">Search for:</span>
+			<input class="widget-search__field" type="search" placeholder="SEARCH..." value="" name="q">
+		</label>
+		<input class="widget-search__submit" type="submit" value="Search">
+		<input type="hidden" name="sitesearch" value="http://pool.idyi.net" />
+	</form>
+</div>
+	
+<div class="widget-recent widget">
+	<h4 class="widget__title">Recent Posts</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph%E5%AE%89%E8%A3%85%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98/">ceph安装中遇到的问题</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph-%E5%AE%89%E8%A3%85/">ceph 安装</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph-%E5%AE%89%E8%A3%85%E5%89%8D%E7%9A%84%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C/">ceph 安装前的准备工作</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/02/networkmanager%E9%85%8D%E7%BD%AE%E7%BD%91%E7%BB%9Cteam/">NetworkManager配置网络team</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/06/docker-registry-%E5%AD%98%E5%82%A8%E5%88%B0aliyun-oss/">Docker registry 存储到aliyun oss</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/06/docker-registry/">Docker registry</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/%E4%BD%BF%E7%94%A8letsencrypt/">使用letsencrypt</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/docker-daemon%E7%9A%84http-socket-tls%E5%8A%A0%E5%AF%86%E8%BF%9E%E6%8E%A5/">docker daemon的HTTP socket TLS加密连接</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/docker%E7%9A%84devicemapper-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">docker的devicemapper 最佳实践</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/docker%E9%80%89%E6%8B%A9%E5%AD%98%E5%82%A8%E9%A9%B1%E5%8A%A8%E5%99%A8/">docker选择存储驱动器</a></li>
+		</ul>
+	</div>
+</div>
+
+	
+<div class="widget-categories widget">
+	<h4 class="widget__title">Categories</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/ceph">Ceph</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/docker">Docker</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/java">Java</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/linux">Linux</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/macos">Macos</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/mysql">Mysql</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/oracle">Oracle</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/other">Other</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/postgresql">Postgresql</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.netcategories/python">Python</a></li>
+		</ul>
+	</div>
+</div>
+	
+<div class="widget-taglist widget">
+	<h4 class="widget__title">Tags</h4>
+	<div class="widget__content">
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/aliyun-oss" title="aliyun-oss">aliyun-oss</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/array" title="array">array</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/backup" title="backup">backup</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/bond" title="bond">bond</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/ceph" title="ceph">ceph</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/comparision" title="comparision">comparision</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/composite-type" title="composite-type">composite-type</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/container" title="container">container</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/database" title="database">database</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/date" title="date">date</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/devicemapper" title="devicemapper">devicemapper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/dict" title="dict">dict</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/dml" title="dml">dml</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/dockerfile" title="dockerfile">dockerfile</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/driect-lvm" title="driect-lvm">driect-lvm</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/enum" title="enum">enum</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/etcd" title="etcd">etcd</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/failover" title="failover">failover</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/firewall" title="firewall">firewall</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/general-query" title="general-query">general-query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/generate_series" title="generate_series">generate_series</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/generate_subscripts" title="generate_subscripts">generate_subscripts</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/ha" title="ha">ha</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/image" title="image">image</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/inheritance" title="inheritance">inheritance</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/install" title="install">install</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/letsencrypt" title="letsencrypt">letsencrypt</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/log" title="log">log</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/logrotate" title="logrotate">logrotate</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/lvm" title="lvm">lvm</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/maven" title="maven">maven</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/mysql-config-editor" title="mysql-config-editor">mysql-config-editor</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/native" title="native">native</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/network" title="network">network</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/nmcli" title="nmcli">nmcli</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/partial-index" title="partial-index">partial-index</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/partition" title="partition">partition</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/partition-table" title="partition-table">partition-table</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/pg_dump" title="pg_dump">pg_dump</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/pgadmin" title="pgadmin">pgadmin</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/pip" title="pip">pip</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/pitr" title="pitr">pitr</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/postgres" title="postgres">postgres</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/postgresql.conf" title="postgresql.conf">postgresql.conf</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/query" title="query">query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/registry" title="registry">registry</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/restore" title="restore">restore</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/role" title="role">role</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/rsync" title="rsync">rsync</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/schema" title="schema">schema</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/serial" title="serial">serial</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/slow-query" title="slow-query">slow-query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/sqldeveloper" title="sqldeveloper">sqldeveloper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/ssh" title="ssh">ssh</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/standby" title="standby">standby</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/storage-driver" title="storage-driver">storage-driver</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/storage-drivers" title="storage-drivers">storage-drivers</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/streaming-replication" title="streaming-replication">streaming-replication</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/string" title="string">string</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/table" title="table">table</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/tablespace" title="tablespace">tablespace</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/team" title="team">team</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/teamdctl" title="teamdctl">teamdctl</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/time" title="time">time</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/timestamp" title="timestamp">timestamp</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/tls" title="tls">tls</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/tomcat" title="tomcat">tomcat</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/transaction-isolation" title="transaction-isolation">transaction-isolation</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/upgrade" title="upgrade">upgrade</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/user" title="user">user</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/virtualenvwrapper" title="virtualenvwrapper">virtualenvwrapper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/volumns" title="volumns">volumns</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/wal" title="wal">wal</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.nettags/%e6%95%b0%e5%ad%a6%e5%87%bd%e6%95%b0" title="数学函数">数学函数</a>
+	</div>
+</div>
+</aside>
+	</div>
+		<footer class="footer" itemscope="itemscope" itemtype="http://schema.org/WPFooter">
+			<div class="container container-inner">
+				<p class="footer__copyright">&copy; 2017 河马的池塘. Based on <a href="//wordpress.org/themes/mh-magazine-lite/" target="_blank" rel="nofollow noopener noreferrer">MH Magazine lite</a>.</p>
+			</div>
+		</footer>
+	</div>
+
+<script>
+	var navigation = responsiveNav(".menu", {
+		navClass: "menu--collapse",
+	});
+</script>
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-92973579-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+</body>
+</html>

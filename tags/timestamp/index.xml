@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Timestamp on 河马的池塘</title>
+    <link>http://pool.idyi.net/tags/timestamp/</link>
+    <description>Recent content in Timestamp on 河马的池塘</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <copyright>Copyright (c) 2017, Hippo; all rights reserved.</copyright>
+    <lastBuildDate>Sat, 28 Feb 2015 00:48:16 +0800</lastBuildDate>
+    
+	<atom:link href="http://pool.idyi.net/tags/timestamp/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>postgresql数据类型之时间类型</title>
+      <link>http://pool.idyi.net/2015/02/postgresql%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%B9%8B%E6%97%B6%E9%97%B4%E7%B1%BB%E5%9E%8B/</link>
+      <pubDate>Sat, 28 Feb 2015 00:48:16 +0800</pubDate>
+      
+      <guid>http://pool.idyi.net/2015/02/postgresql%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%B9%8B%E6%97%B6%E9%97%B4%E7%B1%BB%E5%9E%8B/</guid>
+      <description>&lt;p&gt;包括date,time,timestamp,interval&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

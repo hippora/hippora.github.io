@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Storage Driver on 河马的池塘</title>
+    <link>http://pool.idyi.net/tags/storage-driver/</link>
+    <description>Recent content in Storage Driver on 河马的池塘</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <copyright>Copyright (c) 2017, Hippo; all rights reserved.</copyright>
+    <lastBuildDate>Wed, 25 May 2016 11:37:09 +0800</lastBuildDate>
+    
+	<atom:link href="http://pool.idyi.net/tags/storage-driver/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>docker选择存储驱动器</title>
+      <link>http://pool.idyi.net/2016/05/docker%E9%80%89%E6%8B%A9%E5%AD%98%E5%82%A8%E9%A9%B1%E5%8A%A8%E5%99%A8/</link>
+      <pubDate>Wed, 25 May 2016 11:37:09 +0800</pubDate>
+      
+      <guid>http://pool.idyi.net/2016/05/docker%E9%80%89%E6%8B%A9%E5%AD%98%E5%82%A8%E9%A9%B1%E5%8A%A8%E5%99%A8/</guid>
+      <description>&lt;p&gt;docker Storage driver&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

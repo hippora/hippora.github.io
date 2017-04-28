@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Driect Lvm on 河马的池塘</title>
+    <link>http://pool.idyi.net/tags/driect-lvm/</link>
+    <description>Recent content in Driect Lvm on 河马的池塘</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <copyright>Copyright (c) 2017, Hippo; all rights reserved.</copyright>
+    <lastBuildDate>Thu, 26 May 2016 11:39:14 +0800</lastBuildDate>
+    
+	<atom:link href="http://pool.idyi.net/tags/driect-lvm/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>docker的devicemapper 最佳实践</title>
+      <link>http://pool.idyi.net/2016/05/docker%E7%9A%84devicemapper-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/</link>
+      <pubDate>Thu, 26 May 2016 11:39:14 +0800</pubDate>
+      
+      <guid>http://pool.idyi.net/2016/05/docker%E7%9A%84devicemapper-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/</guid>
+      <description>&lt;p&gt;devicemapper生产环境要使用driect-lvm模式&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>
