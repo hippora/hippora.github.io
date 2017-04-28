@@ -406,13 +406,13 @@
   </url>
   
   <url>
-    <loc>http://pool.idyi.net/tags/ceph/</loc>
+    <loc>http://pool.idyi.net/categories/ceph/</loc>
     <lastmod>2017-03-28T18:05:51+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://pool.idyi.net/categories/ceph/</loc>
+    <loc>http://pool.idyi.net/tags/ceph/</loc>
     <lastmod>2017-03-28T18:05:51+08:00</lastmod>
     <priority>0</priority>
   </url>
