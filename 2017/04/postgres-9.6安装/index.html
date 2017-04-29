@@ -3,17 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Firewall</title>
+<title>postgres 9.6安装</title>
 <meta name="description" content="河马的笔记">
 <meta name="generator" content="Hugo 0.20.5" />
-<meta property="og:title" content="Firewall" />
-<meta property="og:description" content="河马的笔记" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="http://pool.idyi.net/tags/firewall/" />
+<meta property="og:title" content="postgres 9.6安装" />
+<meta property="og:description" content="使用yum安装
+
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://pool.idyi.net/2017/04/postgres-9.6%E5%AE%89%E8%A3%85/" />
 
 
 
-<meta property="og:updated_time" content="2015-08-02T10:24:57&#43;08:00"/>
+<meta property="article:published_time" content="2017-04-29T22:35:00&#43;08:00"/>
+<meta property="article:modified_time" content="2017-04-29T22:35:00&#43;08:00"/>
+
 
 
 
@@ -25,7 +29,7 @@
 
 
 <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-<link rel="alternate" type="application/rss+xml" title="河马的池塘 Feed" href="http://pool.idyi.net/tags/firewall/index.xml">
+
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700" type="text/css" media="all" />
 <link rel="stylesheet" href="http://pool.idyi.net/css/style.css" type="text/css" media="all" />
 <script type="text/javascript" src="http://pool.idyi.net/js/scripts.js"></script>
@@ -49,31 +53,132 @@
 		</header>
 		<div class="wrapper clearfix">
 
-	<div class="main-content loop content" role="main">
-		<header class="page-header">
-			<h1 class="page-header__title">Firewall</h1>
+<div class="main-content content" role="main" itemprop="mainContentOfPage">
+	<article class="post">
+		<header class="post__header clearfix">
+			<h1 class="post__title">postgres 9.6安装</h1>
+			<p class="post__meta meta">
+				<svg class="icon icon-time" height="14" viewBox="0 0 16 16" width="14" xmlns="http://www.w3.org/2000/svg"><path d="m8-.0000003c-4.4 0-8 3.6-8 8 0 4.4000003 3.6 8.0000003 8 8.0000003 4.4 0 8-3.6 8-8.0000003 0-4.4-3.6-8-8-8zm0 14.4000003c-3.52 0-6.4-2.88-6.4-6.4000003 0-3.52 2.88-6.4 6.4-6.4 3.52 0 6.4 2.88 6.4 6.4 0 3.5200003-2.88 6.4000003-6.4 6.4000003zm.4-10.4000003h-1.2v4.8l4.16 2.5600003.64-1.04-3.6-2.1600003z"/></svg>
+				<time class="post__meta-date" datetime="2017-04-29 22:35:00 &#43;0800 CST">April 29, 2017</time>
+				<span class="post__meta-categories meta-categories">
+					<svg class="icon icon-category" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m7 2l1 2h8v11h-16v-13z"/></svg>
+					<a class="meta-categories__link" href="http://pool.idyi.net/categories/postgresql" rel="category">postgresql</a></span>
+			</p>
 		</header>
-		<article class="loop__item post clearfix">
-			<div class="loop__content clearfix">
-				<header class="loop__header">
-					<h3 class="loop__title post__title ">
-						<a href="http://pool.idyi.net/2015/08/firewalld%E5%B1%8F%E8%94%BDip/" rel="bookmark">firewalld屏蔽ip</a>
-					</h3>
-					<div class="loop__meta meta">
-						<svg class="icon icon-time" height="14" viewBox="0 0 16 16" width="14" xmlns="http://www.w3.org/2000/svg"><path d="m8-.0000003c-4.4 0-8 3.6-8 8 0 4.4000003 3.6 8.0000003 8 8.0000003 4.4 0 8-3.6 8-8.0000003 0-4.4-3.6-8-8-8zm0 14.4000003c-3.52 0-6.4-2.88-6.4-6.4000003 0-3.52 2.88-6.4 6.4-6.4 3.52 0 6.4 2.88 6.4 6.4 0 3.5200003-2.88 6.4000003-6.4 6.4000003zm.4-10.4000003h-1.2v4.8l4.16 2.5600003.64-1.04-3.6-2.1600003z"/></svg>
-						<time class="loop__meta-date" datetime="2015-08-02 10:24:57 &#43;0800 CST">August 02, 2015</time>
-					</div>
-				</header>
-				<div class="loop__excerpt">
-					<p>firewalld屏蔽ip</p>
+		<div class="post__content clearfix">
+			<p>使用yum安装</p>
 
 <p></p>
-				</div>
-			</div>
-		</article>
 
+<h2 id="安装repository-rpm">安装Repository RPM</h2>
+
+<p><a href="https://yum.postgresql.org/repopackages.php">https://yum.postgresql.org/repopackages.php</a></p>
+
+<pre><code>[root@srv00 ~]# curl -#O https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+[root@srv00 ~]# yum install epel-release -y
+[root@srv00 ~]# rpm -ivh pgdg-centos96-9.6-3.noarch.rpm
+warning: pgdg-centos96-9.6-3.noarch.rpm: Header V4 DSA/SHA1 Signature, key ID 442df0f8: NOKEY
+Preparing...                          ################################# [100%]
+Updating / installing...
+   1:pgdg-centos96-9.6-3              ################################# [100%]
+[root@srv00 ~]# yum install postgresql96-server postgresql96-contrib postgresql96-docs -y
+</code></pre>
+
+<h2 id="初始化cluster">初始化cluster</h2>
+
+<pre><code>[root@srv00 ~]# /usr/pgsql-9.6/bin/postgresql96-setup initdb
+Initializing database ... OK
+</code></pre>
+
+<h2 id="启动">启动</h2>
+
+<pre><code>[root@srv00 ~]# systemctl enable postgresql-9.6
+[root@srv00 ~]# systemctl start postgresql-9.6
+[root@srv00 ~]# systemctl status postgresql-9.6
+● postgresql-9.6.service - PostgreSQL 9.6 database server
+   Loaded: loaded (/usr/lib/systemd/system/postgresql-9.6.service; enabled; vendor preset: disabled)
+   Active: active (running) since Sat 2017-04-29 23:11:10 CST; 8s ago
+  Process: 16631 ExecStartPre=/usr/pgsql-9.6/bin/postgresql96-check-db-dir ${PGDATA} (code=exited, status=0/SUCCESS)
+ Main PID: 16637 (postmaster)
+   CGroup: /system.slice/postgresql-9.6.service
+           ├─16637 /usr/pgsql-9.6/bin/postmaster -D /var/lib/pgsql/9.6/data/
+           ├─16639 postgres: logger process
+           ├─16641 postgres: checkpointer process
+           ├─16642 postgres: writer process
+           ├─16643 postgres: wal writer process
+           ├─16644 postgres: autovacuum launcher process
+           └─16645 postgres: stats collector process
+
+Apr 29 23:11:10 srv00 systemd[1]: Starting PostgreSQL 9.6 database server...
+Apr 29 23:11:10 srv00 postmaster[16637]: &lt; 2017-04-29 23:11:10.765 CST &gt; LOG:  redirecting log output to logging collector process
+Apr 29 23:11:10 srv00 postmaster[16637]: &lt; 2017-04-29 23:11:10.765 CST &gt; HINT:  Future log output will appear in directory &quot;pg_log&quot;.
+Apr 29 23:11:10 srv00 systemd[1]: Started PostgreSQL 9.6 database server.
+</code></pre>
+
+<h2 id="测试">测试</h2>
+
+<pre><code>-bash-4.2$ psql -c '\l'
+                                  List of databases
+   Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges
+-----------+----------+----------+-------------+-------------+-----------------------
+ postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |
+ template0 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
+           |          |          |             |             | postgres=CTc/postgres
+ template1 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
+           |          |          |             |             | postgres=CTc/postgres
+(3 rows)
+</code></pre>
+
+<p>//END</p>
+		</div>
 		
+<div class="post__tags tags clearfix">
+	<svg class="icon icon-tag" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="m4.73135 3.3795002q0-.5597-.39604-.9557-.39604-.3961-.95577-.3961-.55974 0-.95578.3961-.39604.396-.39604.9557 0 .5598.39604.9558.39604.3961.95578.3961.55973 0 .95577-.3961.39604-.396.39604-.9558zm11.26865 6.0832q0 .5596998-.39076.9504998l-5.18548 5.196q-.41188.3908-.9610504.3908-.55974 0-.9505-.3908l-7.5511496-7.5616998q-.40132-.3907-.68119-1.0666-.27987-.6759-.27987-1.2357v-4.3934q0-.54920004.40132-.95050004.40132-.4013.9505-.4013h4.39339q.55974 0 1.23565.2799.67591.2798 1.07723.6812l7.55115 7.54060004q.39076.4118.39076.961z"/></svg>
+	<ul class="tags__list">
+		<li class="tags__item"><a class="tags__link" href="http://pool.idyi.net/tags/install/" rel="tag">install</a></li>
+	</ul>
+</div>
+
+	</article>
+	
+<div class="authorbox clearfix">
+	<figure class="authorbox__avatar">
+		<img alt="Hippo avatar" src="http://pool.idyi.net/img/avatar.jpg" class="avatar" height="90" width="90">
+	</figure>
+	<div class="authorbox__header">
+		<span class="authorbox__name">About Hippo</span>
 	</div>
+	<div class="authorbox__description">
+		Hippo&#39;s true identity is unknown. Maybe he is a successful blogger or writer. Nobody knows it.
+	</div>
+</div>
+	
+<nav class="post-nav row clearfix" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<div class="post-nav__item post-nav__item--prev col-1-2">
+		<a class="post-nav__link" href="http://pool.idyi.net/2017/03/ceph%E5%AE%89%E8%A3%85%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98/" rel="prev"><span class="post-nav__caption">«Previous</span><p class="post-nav__post-title">ceph安装中遇到的问题</p></a>
+	</div>
+</nav>
+
+	
+<div class="comments">
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'hippool';
+    var disqus_identifier = 'http:\/\/pool.idyi.net\/2017\/04\/postgres-9.6%E5%AE%89%E8%A3%85\/';
+    var disqus_title = 'postgres 9.6安装';
+    var disqus_url = 'http:\/\/pool.idyi.net\/2017\/04\/postgres-9.6%E5%AE%89%E8%A3%85\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+</div>
 
 <aside class="sidebar" itemscope="itemscope" itemtype="http://schema.org/WPSideBar">
 	
