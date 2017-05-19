@@ -213,7 +213,7 @@ if [ -z $GROUPNAME ]; then
 	exit 1;
 fi
 
-#######
+# =====
 
 useradd -M -g $GROUP -s /usr/sbin/nologin $USER
 echo -e &quot;$PASSWD\n$PASSWD&quot; | pdbedit -a $USER -t
@@ -243,7 +243,7 @@ rm -f tmp.txt
 
 <p>有些windows系统，需要修改安全策略才能使用samba。账号密码正确却登录不了的可以设置试试：</p>
 
-<p>开始运行 secpol.msc -&gt; 本地策略 -&gt; 安全选项 -&gt; 网络安全: LAN 管理器身份验证级别 -&gt; 改成“网络安全: LAN 管理器身份验证级别”</p>
+<p>开始运行 secpol.msc -&gt; 本地策略 -&gt; 安全选项 -&gt; 网络安全: LAN 管理器身份验证级别 -&gt; 改成&rdquo;发送 LM &amp; NTLM - 如果协商一致，则使用 NTLMv2 会话安全&rdquo;</p>
 
 <p>//END</p>
 		</div>
@@ -271,7 +271,7 @@ rm -f tmp.txt
 	
 <nav class="post-nav row clearfix" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
 	<div class="post-nav__item post-nav__item--prev col-1-2">
-		<a class="post-nav__link" href="http://pool.idyi.net/2017/03/ceph%E5%AE%89%E8%A3%85%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98/" rel="prev"><span class="post-nav__caption">«Previous</span><p class="post-nav__post-title">ceph安装中遇到的问题</p></a>
+		<a class="post-nav__link" href="http://pool.idyi.net/2017/04/postgres-9.6%E5%AE%89%E8%A3%85/" rel="prev"><span class="post-nav__caption">«Previous</span><p class="post-nav__post-title">postgres 9.6安装</p></a>
 	</div>
 </nav>
 
@@ -314,6 +314,7 @@ rm -f tmp.txt
 	<div class="widget__content">
 		<ul class="widget__list">
 			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/05/samba-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/">samba 安装配置</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/04/postgres-9.6%E5%AE%89%E8%A3%85/">postgres 9.6安装</a></li>
 			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph%E5%AE%89%E8%A3%85%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98/">ceph安装中遇到的问题</a></li>
 			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph-%E5%AE%89%E8%A3%85/">ceph 安装</a></li>
 			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph-%E5%AE%89%E8%A3%85%E5%89%8D%E7%9A%84%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C/">ceph 安装前的准备工作</a></li>
@@ -322,7 +323,6 @@ rm -f tmp.txt
 			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/06/docker-registry/">Docker registry</a></li>
 			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/%E4%BD%BF%E7%94%A8letsencrypt/">使用letsencrypt</a></li>
 			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/docker-daemon%E7%9A%84http-socket-tls%E5%8A%A0%E5%AF%86%E8%BF%9E%E6%8E%A5/">docker daemon的HTTP socket TLS加密连接</a></li>
-			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/docker%E7%9A%84devicemapper-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">docker的devicemapper 最佳实践</a></li>
 		</ul>
 	</div>
 </div>
