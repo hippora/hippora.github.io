@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>samba 安装配置</title>
+<meta name="description" content="河马的笔记">
+<meta name="generator" content="Hugo 0.21-DEV" />
+<meta property="og:title" content="samba 安装配置" />
+<meta property="og:description" content="记录一下samba的安装配置
+
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://pool.idyi.net/2017/05/samba-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/" />
+
+
+
+<meta property="article:published_time" content="2017-05-19T15:14:11&#43;08:00"/>
+<meta property="article:modified_time" content="2017-05-19T15:14:11&#43;08:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<link rel="dns-prefetch" href="//fonts.googleapis.com" />
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700" type="text/css" media="all" />
+<link rel="stylesheet" href="http://pool.idyi.net/css/style.css" type="text/css" media="all" />
+<script type="text/javascript" src="http://pool.idyi.net/js/scripts.js"></script>
+</head>
+<body class="body body-right-sidebar mobile" itemscope="itemscope" itemtype="http://schema.org/WebPage">
+	<div class="container container-outer">
+		<header class="header" itemscope="itemscope" itemtype="http://schema.org/WPHeader">
+			<div class="container container-inner clearfix">
+				<div class="logo" role="banner" itemscope="itemscope" itemtype="http://schema.org/Brand">
+					<a class="logo__link" href="http://pool.idyi.net/" title="河马的池塘" rel="home">
+						<h1 class="logo__title">河马的池塘</h1>
+						<h2 class="logo__tagline">一些技术笔记</h2>
+					</a>
+				</div>
+			</div>
+			<nav class="menu" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<ul class="menu__list">
+		<li class="menu__item "><a class="menu__link" href="http://pool.idyi.net/about">ABOUT ME</a></li>
+	</ul>
+</nav>
+		</header>
+		<div class="wrapper clearfix">
+
+<div class="main-content content" role="main" itemprop="mainContentOfPage">
+	<article class="post">
+		<header class="post__header clearfix">
+			<h1 class="post__title">samba 安装配置</h1>
+			<p class="post__meta meta">
+				<svg class="icon icon-time" height="14" viewBox="0 0 16 16" width="14" xmlns="http://www.w3.org/2000/svg"><path d="m8-.0000003c-4.4 0-8 3.6-8 8 0 4.4000003 3.6 8.0000003 8 8.0000003 4.4 0 8-3.6 8-8.0000003 0-4.4-3.6-8-8-8zm0 14.4000003c-3.52 0-6.4-2.88-6.4-6.4000003 0-3.52 2.88-6.4 6.4-6.4 3.52 0 6.4 2.88 6.4 6.4 0 3.5200003-2.88 6.4000003-6.4 6.4000003zm.4-10.4000003h-1.2v4.8l4.16 2.5600003.64-1.04-3.6-2.1600003z"/></svg>
+				<time class="post__meta-date" datetime="2017-05-19 15:14:11 &#43;0800 CST">May 19, 2017</time>
+				<span class="post__meta-categories meta-categories">
+					<svg class="icon icon-category" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m7 2l1 2h8v11h-16v-13z"/></svg>
+					<a class="meta-categories__link" href="http://pool.idyi.net/categories/linux" rel="category">linux</a></span>
+			</p>
+		</header>
+		<div class="post__content clearfix">
+			<p>记录一下samba的安装配置</p>
+
+<p></p>
+
+<h2 id="centos-下安装">centos 下安装</h2>
+
+<pre><code>[root@samba-srv ~]# yum install samba samba-client -y
+</code></pre>
+
+<h2 id="配置">配置</h2>
+
+<h3 id="准备">准备</h3>
+
+<p>为每个部门添加一个组。</p>
+
+<pre><code>[root@samba-srv ~]# groupadd legal
+[root@samba-srv ~]# groupadd tech
+[root@samba-srv ~]# groupadd ecomm
+[root@samba-srv ~]# groupadd sales
+</code></pre>
+
+<p>创建几个文件夹</p>
+
+<pre><code>[root@samba-srv ~]# mkdir -p /data/samba/{public,tmp,legal,tech,ecomm,sales}
+[root@samba-srv ~]# chmod 777 /data/samba/*
+</code></pre>
+
+<h3 id="配置samba服务">配置samba服务</h3>
+
+<p>总配置</p>
+
+<pre><code>[root@samba-srv ~]# cd /etc/samba/
+[root@samba-srv samba]# cat smb.conf
+[global]
+	# server
+	workgroup = WORDGROUP
+	server string = Samba(%v) on %L
+;	netbios name = SAMBA-SRV
+;	hosts allow = 127. 192.168.1. 192.168.10. 192.168.30.
+
+	# log
+	log level = 2
+	log file = /var/log/samba/log.%m
+	max log size = 10240
+
+	security = user
+	passdb backend = tdbsam
+	map to guest = Bad User
+;	guest account = pcguest
+
+;	printing = cups
+;	printcap name = cups
+	load printers = no
+;	cups options = raw
+
+	include = /etc/samba/smb.conf.%G
+[public]
+	comment = Public Space
+	path = /data/samba/public
+	browseable = yes
+	guest ok = yes
+	write list = @tech
+;	create mode = 0660
+;	directory mode = 0660
+
+[tmp]
+	comment = Tmp Space
+	path = /data/samba/tmp
+	volume = volumn
+	writeable = yes
+	browseable = yes
+	guest ok = yes
+</code></pre>
+
+<blockquote>
+<p><code>tmp</code> 匿名可以读写，同事交换文件用，
+<code>public</code>放点同事可以用的软件，只由技术部同事可写</p>
+</blockquote>
+
+<p>几个部门配置</p>
+
+<pre><code>[root@samba-srv samba]# cat smb.conf.tech
+[技术部]
+	comment = Tech Department
+	path = /data/samba/tech
+	browseable = yes
+	valid users = @tech
+	write list = @tech
+;	create mode = 0660
+;	directory mode = 0660
+</code></pre>
+
+<blockquote>
+<p>其他几个部门配置复制改一下,配置名字要跟总配置的include名字匹配。
+只有同部门的同事可以读写</p>
+</blockquote>
+
+<h3 id="启动samba">启动samba</h3>
+
+<pre><code>[root@samba-srv ~]# systemctl enable smb
+[root@samba-srv ~]# systemctl enable nmb
+[root@samba-srv ~]# systemctl start smb
+[root@samba-srv ~]# systemctl start nmb
+</code></pre>
+
+<h3 id="防火墙-selinux">防火墙，selinux</h3>
+
+<p>略</p>
+
+<h3 id="添加用户">添加用户</h3>
+
+<pre><code>[root@samba-srv ~]# useradd -M -g tech -s /usr/sbin/nologin jack
+[root@samba-srv ~]# pdbedit -a jack
+</code></pre>
+
+<p>写了个建用户的脚本</p>
+
+<pre><code>[root@samba-srv ~]# cat add_samba_account.sh
+#!/usr/bin/bash
+
+USER=${1}
+GROUP=${2}
+GROUPNAME=
+EMAIL=$USER@example.com
+PASSWD=`date | md5sum |cut -c1-8`
+
+usage () {
+	echo
+	echo &quot;usage: $0 user group&quot;
+	echo
+	echo &quot;group should in : legal,tech,sales,ecomm&quot;
+	return 0
+}
+
+if [ $# -ne 2 ]; then usage; exit 1; fi;
+
+
+for i in legal=法务部 tech=技术部 sales=销售部 ecomm=电商部; do
+	if [ &quot;$GROUP&quot; = `echo $i | cut -d'=' -f1` ]; then GROUPNAME=`echo $i | cut -d'=' -f2` ; fi
+done;
+
+if [ -z $GROUPNAME ]; then
+	echo &quot;group error!&quot;
+	usage
+	exit 1;
+fi
+
+#######
+
+useradd -M -g $GROUP -s /usr/sbin/nologin $USER
+echo -e &quot;$PASSWD\n$PASSWD&quot; | pdbedit -a $USER -t
+
+echo -e &quot;Hi,$USER\n&quot; &gt; tmp.txt
+echo -e &quot;你的网络共享账号已经创建成功！\n&quot; &gt;&gt; tmp.txt
+echo '访问地址: \\192.168.1.200' &gt;&gt; tmp.txt
+echo '部门目录: \\192.168.1.200\'$GROUP &gt;&gt; tmp.txt
+echo -e &quot;账号：$USER\t密码：$PASSWD\n&quot;  &gt;&gt; tmp.txt
+
+cat tmp.txt | mutt -s &quot;Samba网络共享账号&quot; $EMAIL
+
+rm -f tmp.txt
+</code></pre>
+
+<h3 id="手动修改密码">手动修改密码</h3>
+
+<pre><code>[root@samba-srv ~]# smbpasswd jack
+</code></pre>
+
+<h3 id="删除用户">删除用户</h3>
+
+<pre><code>[root@samba-srv ~]# pdbedit -x jack
+</code></pre>
+
+<h2 id="其他">其他</h2>
+
+<p>有些windows系统，需要修改安全策略才能使用samba。账号密码正确却登录不了的可以设置试试：</p>
+
+<p>开始运行 secpol.msc -&gt; 本地策略 -&gt; 安全选项 -&gt; 网络安全: LAN 管理器身份验证级别 -&gt; 改成“网络安全: LAN 管理器身份验证级别”</p>
+
+<p>//END</p>
+		</div>
+		
+<div class="post__tags tags clearfix">
+	<svg class="icon icon-tag" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="m4.73135 3.3795002q0-.5597-.39604-.9557-.39604-.3961-.95577-.3961-.55974 0-.95578.3961-.39604.396-.39604.9557 0 .5598.39604.9558.39604.3961.95578.3961.55973 0 .95577-.3961.39604-.396.39604-.9558zm11.26865 6.0832q0 .5596998-.39076.9504998l-5.18548 5.196q-.41188.3908-.9610504.3908-.55974 0-.9505-.3908l-7.5511496-7.5616998q-.40132-.3907-.68119-1.0666-.27987-.6759-.27987-1.2357v-4.3934q0-.54920004.40132-.95050004.40132-.4013.9505-.4013h4.39339q.55974 0 1.23565.2799.67591.2798 1.07723.6812l7.55115 7.54060004q.39076.4118.39076.961z"/></svg>
+	<ul class="tags__list">
+		<li class="tags__item"><a class="tags__link" href="http://pool.idyi.net/tags/samba/" rel="tag">samba</a></li>
+	</ul>
+</div>
+
+	</article>
+	
+<div class="authorbox clearfix">
+	<figure class="authorbox__avatar">
+		<img alt="Hippo avatar" src="http://pool.idyi.net/img/avatar.jpg" class="avatar" height="90" width="90">
+	</figure>
+	<div class="authorbox__header">
+		<span class="authorbox__name">About Hippo</span>
+	</div>
+	<div class="authorbox__description">
+		Hippo&#39;s true identity is unknown. Maybe he is a successful blogger or writer. Nobody knows it.
+	</div>
+</div>
+	
+<nav class="post-nav row clearfix" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<div class="post-nav__item post-nav__item--prev col-1-2">
+		<a class="post-nav__link" href="http://pool.idyi.net/2017/03/ceph%E5%AE%89%E8%A3%85%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98/" rel="prev"><span class="post-nav__caption">«Previous</span><p class="post-nav__post-title">ceph安装中遇到的问题</p></a>
+	</div>
+</nav>
+
+	
+<div class="comments">
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'hippool';
+    var disqus_identifier = 'http:\/\/pool.idyi.net\/2017\/05\/samba-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE\/';
+    var disqus_title = 'samba 安装配置';
+    var disqus_url = 'http:\/\/pool.idyi.net\/2017\/05\/samba-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+</div>
+
+<aside class="sidebar" itemscope="itemscope" itemtype="http://schema.org/WPSideBar">
+	
+<div class="widget-search widget">
+	<form class="widget-search__form" role="search" method="get" action="//google.com/search">
+		<label>
+			<span class="screen-reader-text">Search for:</span>
+			<input class="widget-search__field" type="search" placeholder="SEARCH..." value="" name="q">
+		</label>
+		<input class="widget-search__submit" type="submit" value="Search">
+		<input type="hidden" name="sitesearch" value="http://pool.idyi.net/" />
+	</form>
+</div>
+	
+<div class="widget-recent widget">
+	<h4 class="widget__title">Recent Posts</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/05/samba-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/">samba 安装配置</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph%E5%AE%89%E8%A3%85%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98/">ceph安装中遇到的问题</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph-%E5%AE%89%E8%A3%85/">ceph 安装</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph-%E5%AE%89%E8%A3%85%E5%89%8D%E7%9A%84%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C/">ceph 安装前的准备工作</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/02/networkmanager%E9%85%8D%E7%BD%AE%E7%BD%91%E7%BB%9Cteam/">NetworkManager配置网络team</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/06/docker-registry-%E5%AD%98%E5%82%A8%E5%88%B0aliyun-oss/">Docker registry 存储到aliyun oss</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/06/docker-registry/">Docker registry</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/%E4%BD%BF%E7%94%A8letsencrypt/">使用letsencrypt</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/docker-daemon%E7%9A%84http-socket-tls%E5%8A%A0%E5%AF%86%E8%BF%9E%E6%8E%A5/">docker daemon的HTTP socket TLS加密连接</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/docker%E7%9A%84devicemapper-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">docker的devicemapper 最佳实践</a></li>
+		</ul>
+	</div>
+</div>
+
+	
+<div class="widget-categories widget">
+	<h4 class="widget__title">Categories</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/ceph">Ceph</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/docker">Docker</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/java">Java</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/linux">Linux</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/macos">Macos</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/mysql">Mysql</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/oracle">Oracle</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/other">Other</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/postgresql">Postgresql</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/python">Python</a></li>
+		</ul>
+	</div>
+</div>
+	
+<div class="widget-taglist widget">
+	<h4 class="widget__title">Tags</h4>
+	<div class="widget__content">
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/aliyun-oss" title="aliyun-oss">aliyun-oss</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/array" title="array">array</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/backup" title="backup">backup</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/bond" title="bond">bond</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/ceph" title="ceph">ceph</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/comparision" title="comparision">comparision</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/composite-type" title="composite-type">composite-type</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/container" title="container">container</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/database" title="database">database</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/date" title="date">date</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/devicemapper" title="devicemapper">devicemapper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/dict" title="dict">dict</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/dml" title="dml">dml</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/dockerfile" title="dockerfile">dockerfile</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/driect-lvm" title="driect-lvm">driect-lvm</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/enum" title="enum">enum</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/etcd" title="etcd">etcd</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/failover" title="failover">failover</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/firewall" title="firewall">firewall</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/general-query" title="general-query">general-query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/generate_series" title="generate_series">generate_series</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/generate_subscripts" title="generate_subscripts">generate_subscripts</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/ha" title="ha">ha</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/image" title="image">image</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/inheritance" title="inheritance">inheritance</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/install" title="install">install</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/letsencrypt" title="letsencrypt">letsencrypt</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/log" title="log">log</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/logrotate" title="logrotate">logrotate</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/lvm" title="lvm">lvm</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/maven" title="maven">maven</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/mysql-config-editor" title="mysql-config-editor">mysql-config-editor</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/native" title="native">native</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/network" title="network">network</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/nmcli" title="nmcli">nmcli</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/partial-index" title="partial-index">partial-index</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/partition" title="partition">partition</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/partition-table" title="partition-table">partition-table</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/pg_dump" title="pg_dump">pg_dump</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/pgadmin" title="pgadmin">pgadmin</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/pip" title="pip">pip</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/pitr" title="pitr">pitr</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/postgres" title="postgres">postgres</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/postgresql.conf" title="postgresql.conf">postgresql.conf</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/query" title="query">query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/registry" title="registry">registry</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/restore" title="restore">restore</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/role" title="role">role</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/rsync" title="rsync">rsync</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/samba" title="samba">samba</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/schema" title="schema">schema</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/serial" title="serial">serial</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/slow-query" title="slow-query">slow-query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/sqldeveloper" title="sqldeveloper">sqldeveloper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/ssh" title="ssh">ssh</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/standby" title="standby">standby</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/storage-driver" title="storage-driver">storage-driver</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/storage-drivers" title="storage-drivers">storage-drivers</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/streaming-replication" title="streaming-replication">streaming-replication</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/string" title="string">string</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/table" title="table">table</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/tablespace" title="tablespace">tablespace</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/team" title="team">team</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/teamdctl" title="teamdctl">teamdctl</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/time" title="time">time</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/timestamp" title="timestamp">timestamp</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/tls" title="tls">tls</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/tomcat" title="tomcat">tomcat</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/transaction-isolation" title="transaction-isolation">transaction-isolation</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/upgrade" title="upgrade">upgrade</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/user" title="user">user</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/virtualenvwrapper" title="virtualenvwrapper">virtualenvwrapper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/volumns" title="volumns">volumns</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/wal" title="wal">wal</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/%e6%95%b0%e5%ad%a6%e5%87%bd%e6%95%b0" title="数学函数">数学函数</a>
+	</div>
+</div>
+</aside>
+	</div>
+		<footer class="footer" itemscope="itemscope" itemtype="http://schema.org/WPFooter">
+			<div class="container container-inner">
+				<p class="footer__copyright">&copy; 2017 河马的池塘. Based on <a href="//wordpress.org/themes/mh-magazine-lite/" target="_blank" rel="nofollow noopener noreferrer">MH Magazine lite</a>.</p>
+			</div>
+		</footer>
+	</div>
+
+<script>
+	var navigation = responsiveNav(".menu", {
+		navClass: "menu--collapse",
+	});
+</script>
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-92973579-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+</body>
+</html>
