@@ -7,21 +7,10 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>cn-zh</language>
     <copyright>Copyright (c) 2014-2017, Hippo; all rights reserved.</copyright>
-    <lastBuildDate>Sat, 29 Apr 2017 22:35:00 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 28 Mar 2017 17:22:25 +0800</lastBuildDate>
     
 	<atom:link href="http://pool.idyi.net/tags/install/index.xml" rel="self" type="application/rss+xml" />
     
-    
-    <item>
-      <title>postgres 9.6安装</title>
-      <link>http://pool.idyi.net/2017/04/postgres-9.6%E5%AE%89%E8%A3%85/</link>
-      <pubDate>Sat, 29 Apr 2017 22:35:00 +0800</pubDate>
-      
-      <guid>http://pool.idyi.net/2017/04/postgres-9.6%E5%AE%89%E8%A3%85/</guid>
-      <description>&lt;p&gt;使用yum安装&lt;/p&gt;
-
-&lt;p&gt;&lt;/p&gt;</description>
-    </item>
     
     <item>
       <title>ceph 安装</title>

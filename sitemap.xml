@@ -8,11 +8,6 @@
   </url>
   
   <url>
-    <loc>http://pool.idyi.net/2017/04/postgres-9.6%E5%AE%89%E8%A3%85/</loc>
-    <lastmod>2017-04-29T22:35:00+08:00</lastmod>
-  </url>
-  
-  <url>
     <loc>http://pool.idyi.net/2017/03/ceph%E5%AE%89%E8%A3%85%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98/</loc>
     <lastmod>2017-03-28T18:05:51+08:00</lastmod>
   </url>
@@ -417,13 +412,13 @@
   </url>
   
   <url>
-    <loc>http://pool.idyi.net/tags/ceph/</loc>
+    <loc>http://pool.idyi.net/categories/ceph/</loc>
     <lastmod>2017-03-28T18:05:51+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://pool.idyi.net/categories/ceph/</loc>
+    <loc>http://pool.idyi.net/tags/ceph/</loc>
     <lastmod>2017-03-28T18:05:51+08:00</lastmod>
     <priority>0</priority>
   </url>
@@ -556,7 +551,7 @@
   
   <url>
     <loc>http://pool.idyi.net/tags/install/</loc>
-    <lastmod>2017-04-29T22:35:00+08:00</lastmod>
+    <lastmod>2017-03-28T17:22:25+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -700,7 +695,7 @@
   
   <url>
     <loc>http://pool.idyi.net/categories/postgresql/</loc>
-    <lastmod>2017-04-29T22:35:00+08:00</lastmod>
+    <lastmod>2015-03-09T10:15:59+08:00</lastmod>
     <priority>0</priority>
   </url>
   

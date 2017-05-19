@@ -7,31 +7,18 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>cn-zh</language>
     <copyright>Copyright (c) 2014-2017, Hippo; all rights reserved.</copyright>
-<<<<<<< HEAD
     <lastBuildDate>Fri, 19 May 2017 15:14:11 +0800</lastBuildDate>
-=======
-    <lastBuildDate>Sat, 29 Apr 2017 22:35:00 +0800</lastBuildDate>
->>>>>>> 2bd634e3dd3f542a4aec6add20771795c5bd2929
     
 	<atom:link href="http://pool.idyi.net/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-<<<<<<< HEAD
       <title>samba 安装配置</title>
       <link>http://pool.idyi.net/2017/05/samba-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</link>
       <pubDate>Fri, 19 May 2017 15:14:11 +0800</pubDate>
       
       <guid>http://pool.idyi.net/2017/05/samba-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</guid>
       <description>&lt;p&gt;记录一下samba的安装配置&lt;/p&gt;
-=======
-      <title>postgres 9.6安装</title>
-      <link>http://pool.idyi.net/2017/04/postgres-9.6%E5%AE%89%E8%A3%85/</link>
-      <pubDate>Sat, 29 Apr 2017 22:35:00 +0800</pubDate>
-      
-      <guid>http://pool.idyi.net/2017/04/postgres-9.6%E5%AE%89%E8%A3%85/</guid>
-      <description>&lt;p&gt;使用yum安装&lt;/p&gt;
->>>>>>> 2bd634e3dd3f542a4aec6add20771795c5bd2929
 
 &lt;p&gt;&lt;/p&gt;</description>
     </item>
