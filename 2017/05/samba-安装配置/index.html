@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>samba 安装配置</title>
 <meta name="description" content="河马的笔记">
-<meta name="generator" content="Hugo 0.21-DEV" />
+<meta name="generator" content="Hugo 0.20.5" />
 <meta property="og:title" content="samba 安装配置" />
 <meta property="og:description" content="记录一下samba的安装配置
 
@@ -221,7 +221,7 @@ echo -e &quot;$PASSWD\n$PASSWD&quot; | pdbedit -a $USER -t
 echo -e &quot;Hi,$USER\n&quot; &gt; tmp.txt
 echo -e &quot;你的网络共享账号已经创建成功！\n&quot; &gt;&gt; tmp.txt
 echo '访问地址: \\192.168.1.200' &gt;&gt; tmp.txt
-echo '部门目录: \\192.168.1.200\'$GROUP &gt;&gt; tmp.txt
+echo '部门目录: \\192.168.1.200\'$GROUPNAME &gt;&gt; tmp.txt
 echo -e &quot;账号：$USER\t密码：$PASSWD\n&quot;  &gt;&gt; tmp.txt
 
 cat tmp.txt | mutt -s &quot;Samba网络共享账号&quot; $EMAIL
