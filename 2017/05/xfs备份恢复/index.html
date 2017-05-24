@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>xfs备份恢复</title>
+<meta name="description" content="河马的笔记">
+<meta name="generator" content="Hugo 0.21-DEV" />
+<meta property="og:title" content="xfs备份恢复" />
+<meta property="og:description" content="xfsdump,xfsrestore 使用
+
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://pool.idyi.net/2017/05/xfs%E5%A4%87%E4%BB%BD%E6%81%A2%E5%A4%8D/" />
+
+
+
+<meta property="article:published_time" content="2017-05-24T13:53:12&#43;08:00"/>
+<meta property="article:modified_time" content="2017-05-24T13:53:12&#43;08:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<link rel="dns-prefetch" href="//fonts.googleapis.com" />
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700" type="text/css" media="all" />
+<link rel="stylesheet" href="http://pool.idyi.net/css/style.css" type="text/css" media="all" />
+<script type="text/javascript" src="http://pool.idyi.net/js/scripts.js"></script>
+</head>
+<body class="body body-right-sidebar mobile" itemscope="itemscope" itemtype="http://schema.org/WebPage">
+	<div class="container container-outer">
+		<header class="header" itemscope="itemscope" itemtype="http://schema.org/WPHeader">
+			<div class="container container-inner clearfix">
+				<div class="logo" role="banner" itemscope="itemscope" itemtype="http://schema.org/Brand">
+					<a class="logo__link" href="http://pool.idyi.net/" title="河马的池塘" rel="home">
+						<h1 class="logo__title">河马的池塘</h1>
+						<h2 class="logo__tagline">一些技术笔记</h2>
+					</a>
+				</div>
+			</div>
+			<nav class="menu" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<ul class="menu__list">
+		<li class="menu__item "><a class="menu__link" href="http://pool.idyi.net/about">ABOUT ME</a></li>
+	</ul>
+</nav>
+		</header>
+		<div class="wrapper clearfix">
+
+<div class="main-content content" role="main" itemprop="mainContentOfPage">
+	<article class="post">
+		<header class="post__header clearfix">
+			<h1 class="post__title">xfs备份恢复</h1>
+			<p class="post__meta meta">
+				<svg class="icon icon-time" height="14" viewBox="0 0 16 16" width="14" xmlns="http://www.w3.org/2000/svg"><path d="m8-.0000003c-4.4 0-8 3.6-8 8 0 4.4000003 3.6 8.0000003 8 8.0000003 4.4 0 8-3.6 8-8.0000003 0-4.4-3.6-8-8-8zm0 14.4000003c-3.52 0-6.4-2.88-6.4-6.4000003 0-3.52 2.88-6.4 6.4-6.4 3.52 0 6.4 2.88 6.4 6.4 0 3.5200003-2.88 6.4000003-6.4 6.4000003zm.4-10.4000003h-1.2v4.8l4.16 2.5600003.64-1.04-3.6-2.1600003z"/></svg>
+				<time class="post__meta-date" datetime="2017-05-24 13:53:12 &#43;0800 CST">May 24, 2017</time>
+				<span class="post__meta-categories meta-categories">
+					<svg class="icon icon-category" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m7 2l1 2h8v11h-16v-13z"/></svg>
+					<a class="meta-categories__link" href="http://pool.idyi.net/categories/linux" rel="category">linux</a></span>
+			</p>
+		</header>
+		<div class="post__content clearfix">
+			<p>xfsdump,xfsrestore 使用</p>
+
+<p></p>
+
+<h1 id="xfs备份恢复">xfs备份恢复</h1>
+
+<h2 id="使用xfsdump-备份">使用xfsdump 备份</h2>
+
+<p>没有就先安装</p>
+
+<pre><code class="language-sh">[root@samba-srv ~]# yum install xfsdump -y
+</code></pre>
+
+<p>执行<code>level 0</code> 备份，全量备份</p>
+
+<pre><code class="language-sh">[root@samba-srv tmp]# xfsdump -l 0 -L &quot;Backup level 0 of /data/samba/legal&quot; -M &quot;local&quot; -f /tmp/backup_2.xfsdump /data/samba/legal
+xfsdump: using file dump (drive_simple) strategy
+xfsdump: version 3.1.4 (dump format 3.0) - type ^C for status and control
+xfsdump: level 0 dump of samba-srv:/data/samba/legal
+xfsdump: dump date: Wed May 24 16:00:08 2017
+xfsdump: session id: 8e066a94-f439-4fbe-835c-f894ecb2e92d
+xfsdump: session label: &quot;Backup level 0 of /data/samba/legal&quot;
+xfsdump: ino map phase 1: constructing initial dump list
+xfsdump: ino map phase 2: skipping (no pruning necessary)
+xfsdump: ino map phase 3: skipping (only one dump stream)
+xfsdump: ino map construction complete
+xfsdump: estimated dump size: 19015872 bytes
+xfsdump: creating dump session media file 0 (media 0, file 0)
+xfsdump: dumping ino map
+xfsdump: dumping directories
+xfsdump: dumping non-directory files
+xfsdump: ending media file
+xfsdump: media file size 19013408 bytes
+xfsdump: dump size (non-dir files) : 18990312 bytes
+xfsdump: dump complete: 5 seconds elapsed
+xfsdump: Dump Summary:
+xfsdump:   stream 0 /tmp/backup_2.xfsdump OK (success)
+xfsdump: Dump Status: SUCCESS
+</code></pre>
+
+<p>首先得有<code>level 0</code> 的全量备份，才能继续增量备份,</p>
+
+<p>基于<code>level 0</code>之上的增量备份，就是<code>level 1</code>，基于<code>level 1</code>之上的增量备份就是<code>level 2</code>，以此类推，一共到<code>level 9</code></p>
+
+<p>我们执行一个<code>level 1</code>的：</p>
+
+<pre><code class="language-sh">[root@samba-srv legal]# pwd
+/data/samba/legal
+[root@samba-srv legal]# echo &quot;111111&quot; &gt; xfs.txt
+[root@samba-srv legal]# xfsdump -l 1 -L &quot;Backup level 1 of /data/samba/legal&quot; -M &quot;local&quot; -f /tmp/backup_level1_1.xfsdump /data/samba/legal
+xfsdump: using file dump (drive_simple) strategy
+xfsdump: version 3.1.4 (dump format 3.0) - type ^C for status and control
+xfsdump: level 1 incremental dump of samba-srv:/data/samba/legal based on level 0 dump begun Wed May 24 15:56:38 2017
+xfsdump: dump date: Wed May 24 16:03:35 2017
+...
+</code></pre>
+
+<p>检查下增量备份大小比较小。</p>
+
+<pre><code class="language-sh">[root@samba-srv legal]# ls -lh /tmp/backup_*
+-rw-r--r-- 1 root root 19M May 24 16:00 /tmp/backup_2.xfsdump
+-rw-r--r-- 1 root root 22K May 24 16:03 /tmp/backup_level1_1.xfsdump
+...
+</code></pre>
+
+<p>再执行个<code>level 2</code>的：</p>
+
+<pre><code class="language-sh">[root@samba-srv legal]# echo &quot;2222222&quot; &gt;&gt; xfs.txt 
+[root@samba-srv legal]# xfsdump -l 2 -L &quot;Backup level 2 of /data/samba/legal&quot; -M &quot;local&quot; -f /tmp/backup_level2_1.xfsdump /data/samba/legal
+xfsdump: using file dump (drive_simple) strategy
+xfsdump: version 3.1.4 (dump format 3.0) - type ^C for status and control
+xfsdump: level 2 incremental dump of samba-srv:/data/samba/legal based on level 1 dump begun Wed May 24 16:03:35 2017
+xfsdump: dump date: Wed May 24 16:09:37 2017
+xfsdump: session id: ad1f1bb7-6c50-4ccb-a7ce-3aa56fd2f9b8
+...
+</code></pre>
+
+<h2 id="查看备份信息">查看备份信息</h2>
+
+<p>备份信息会记录在<code>/var/lib/xfsdump/inventory/</code>中。如果不想记录，加<code>-J</code>参数。</p>
+
+<p>查看备份信息：</p>
+
+<pre><code class="language-sh">[root@samba-srv legal]# xfsdump -I
+file system 0:
+        fs id:          be538072-5cb7-4fa5-9073-086d7dfc1572
+        session 0:
+                mount point:    samba-srv:/data/samba/legal
+                device:         samba-srv:/dev/xvdb1
+                time:           Wed May 24 15:50:41 2017
+                session label:  &quot;level 0 of /data/samba/legal Wed May 24 15:50:41 CST 2017&quot;
+                session id:     8a83b78b-0eb1-4ac6-a8a6-2922820e7dd9
+                level:          0
+                resumed:        NO
+                subtree:        NO
+                streams:        1
+                stream 0:
+                        pathname:       /tmp/backup_l0.xfsdump
+                        start:          ino 67 offset 0
+                        end:            ino 73 offset 0
+                        interrupted:    NO
+                        media files:    1
+                        media file 0:
+                                mfile index:    0
+                                mfile type:     data
+                                mfile size:     19013408
+                                mfile start:    ino 67 offset 0
+                                mfile end:      ino 73 offset 0
+                                media label:    &quot;local&quot;
+                                media id:       eebe1aff-9214-4d48-8373-b2b030bef987
+        session 1:
+        。。。
+</code></pre>
+
+<h2 id="使用xfsrestore恢复">使用xfsrestore恢复</h2>
+
+<p>破坏现场先</p>
+
+<pre><code>[root@samba-srv legal]# rm -rf /data/samba/legal/*
+[root@samba-srv legal]# ll /data/samba/legal/
+total 0
+</code></pre>
+
+<p>先恢复<code>level 0</code></p>
+
+<pre><code class="language-sh">[root@samba-srv legal]# xfsrestore -f /tmp/backup_2.xfsdump /data/samba/legal/
+xfsrestore: using file dump (drive_simple) strategy
+xfsrestore: version 3.1.4 (dump format 3.0) - type ^C for status and control
+xfsrestore: searching media for dump
+xfsrestore: examining media file 0
+...
+xfsrestore:   stream 0 /tmp/backup_2.xfsdump OK (success)
+xfsrestore: Restore Status: SUCCESS
+[root@samba-srv legal]# ll /data/samba/legal/
+total 18548
+-rw-rw---- 1 heqing legal 6879099 Feb 21 18:04 Charles-Proxy-4.0.2-Crack.zip
+-rw-rw---- 1 heqing legal 4718689 May  9 17:26 NexentaV1.2.pdf
+-rw-rw---- 1 heqing legal   27048 May 22 11:50 p1atkkbhll1ao2113kj608rpaem4 (1).docx
+...
+</code></pre>
+
+<blockquote>
+<p>数据回来了。而且确实是在创建xfs.txt文件之前（做<code>level 1</code>备份前）</p>
+
+<p>通过<code>xfsrestore -I</code>或<code>xfsdump -I</code>检查可用备份</p>
+</blockquote>
+
+<p>继续恢复增量备份<code>level 1</code></p>
+
+<pre><code class="language-sh">[root@samba-srv legal]# xfsrestore -f /tmp/backup_level1_1.xfsdump /data/samba/legal
+xfsrestore: using file dump (drive_simple) strategy
+xfsrestore: version 3.1.4 (dump format 3.0) - type ^C for status and control
+xfsrestore: searching media for dump
+xfsrestore: examining media file 0
+xfsrestore: dump description: 
+xfsrestore: hostname: samba-srv
+xfsrestore: mount point: /data/samba/legal
+xfsrestore: volume: /dev/xvdb1
+xfsrestore: session time: Wed May 24 16:03:35 2017
+xfsrestore: level: 1
+xfsrestore: session label: &quot;Backup level 1 of /data/samba/legal&quot;
+...
+[root@samba-srv legal]# cat xfs.txt 
+111111
+</code></pre>
+
+<p>恢复<code>level 2</code></p>
+
+<pre><code class="language-sh">[root@samba-srv legal]# xfsrestore -f /tmp/backup_level2_1.xfsdump /data/samba/legal
+[root@samba-srv legal]# cat xfs.txt 
+111111
+2222222
+</code></pre>
+
+<h2 id="探索一下">探索一下</h2>
+
+<p>只恢复<code>level 2</code>到一个空目录下</p>
+
+<pre><code class="language-sh">[root@samba-srv legal]# mkdir xfs_test
+[root@samba-srv legal]# xfsrestore -f /tmp/backup_level2_1.xfsdump /data/samba/legal/xfs_test
+[root@samba-srv legal]# ls xfs_test/
+xfs.txt
+[root@samba-srv legal]# cat xfs_test/xfs.txt 
+111111
+2222222
+</code></pre>
+
+<blockquote>
+<p>只有变动过的文件，文件内容是完整的。</p>
+</blockquote>
+
+<h2 id="备份策略">备份策略</h2>
+
+<p>根据增量数据的大小，来决定什么时候做全量备份，什么时候做增量备份。因为会影响到恢复时间。</p>
+
+<p>写个定时脚本：</p>
+
+<pre><code class="language-sh">[root@samba-srv ~]# cat /opt/backup_samba_xfsdump.sh 
+#!/usr/bin/bash
+
+LEVEL=`date +%w`
+
+MOUNT=&quot;/data/samba/legal&quot;
+BAKDIR=&quot;/data/backup&quot;
+BAKFILE=&quot;backup${LEVEL}_`date +%Y%m%d`.xfsdump&quot;
+
+
+# backup
+xfsdump -l ${LEVEL} -L &quot;Backup level ${LEVEL} of ${MOUNT}&quot; -M local -f ${BAKDIR}/${BAKFILE} $MOUNT
+
+# cleanup
+find ${BAKDIR} -name &quot;*.xfsdump&quot; -mtime +15 -exec rm -f {} \;
+xfsinvutil -F -M ${MOUNT} `date -d &quot;-15 day&quot; +%m/%d/%Y`
+
+[root@samba-srv ~]# crontab -e
+0 3 * * * /opt/backup_samba_xfsdump.sh
+</code></pre>
+
+<p>//END</p>
+		</div>
+		
+<div class="post__tags tags clearfix">
+	<svg class="icon icon-tag" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="m4.73135 3.3795002q0-.5597-.39604-.9557-.39604-.3961-.95577-.3961-.55974 0-.95578.3961-.39604.396-.39604.9557 0 .5598.39604.9558.39604.3961.95578.3961.55973 0 .95577-.3961.39604-.396.39604-.9558zm11.26865 6.0832q0 .5596998-.39076.9504998l-5.18548 5.196q-.41188.3908-.9610504.3908-.55974 0-.9505-.3908l-7.5511496-7.5616998q-.40132-.3907-.68119-1.0666-.27987-.6759-.27987-1.2357v-4.3934q0-.54920004.40132-.95050004.40132-.4013.9505-.4013h4.39339q.55974 0 1.23565.2799.67591.2798 1.07723.6812l7.55115 7.54060004q.39076.4118.39076.961z"/></svg>
+	<ul class="tags__list">
+		<li class="tags__item"><a class="tags__link" href="http://pool.idyi.net/tags/xfsdump/" rel="tag">xfsdump</a></li>
+		<li class="tags__item"><a class="tags__link" href="http://pool.idyi.net/tags/xfsrestore/" rel="tag">xfsrestore</a></li>
+	</ul>
+</div>
+
+	</article>
+	
+<div class="authorbox clearfix">
+	<figure class="authorbox__avatar">
+		<img alt="Hippo avatar" src="http://pool.idyi.net/img/avatar.jpg" class="avatar" height="90" width="90">
+	</figure>
+	<div class="authorbox__header">
+		<span class="authorbox__name">About Hippo</span>
+	</div>
+	<div class="authorbox__description">
+		Hippo&#39;s true identity is unknown. Maybe he is a successful blogger or writer. Nobody knows it.
+	</div>
+</div>
+	
+<nav class="post-nav row clearfix" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<div class="post-nav__item post-nav__item--prev col-1-2">
+		<a class="post-nav__link" href="http://pool.idyi.net/2017/05/samba-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/" rel="prev"><span class="post-nav__caption">«Previous</span><p class="post-nav__post-title">samba 安装配置</p></a>
+	</div>
+</nav>
+
+	
+<div class="comments">
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'hippool';
+    var disqus_identifier = 'http:\/\/pool.idyi.net\/2017\/05\/xfs%E5%A4%87%E4%BB%BD%E6%81%A2%E5%A4%8D\/';
+    var disqus_title = 'xfs备份恢复';
+    var disqus_url = 'http:\/\/pool.idyi.net\/2017\/05\/xfs%E5%A4%87%E4%BB%BD%E6%81%A2%E5%A4%8D\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+</div>
+
+<aside class="sidebar" itemscope="itemscope" itemtype="http://schema.org/WPSideBar">
+	
+<div class="widget-search widget">
+	<form class="widget-search__form" role="search" method="get" action="//google.com/search">
+		<label>
+			<span class="screen-reader-text">Search for:</span>
+			<input class="widget-search__field" type="search" placeholder="SEARCH..." value="" name="q">
+		</label>
+		<input class="widget-search__submit" type="submit" value="Search">
+		<input type="hidden" name="sitesearch" value="http://pool.idyi.net/" />
+	</form>
+</div>
+	
+<div class="widget-recent widget">
+	<h4 class="widget__title">Recent Posts</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/05/xfs%E5%A4%87%E4%BB%BD%E6%81%A2%E5%A4%8D/">xfs备份恢复</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/05/samba-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/">samba 安装配置</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/04/postgres-9.6%E5%AE%89%E8%A3%85/">postgres 9.6安装</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph%E5%AE%89%E8%A3%85%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98/">ceph安装中遇到的问题</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph-%E5%AE%89%E8%A3%85/">ceph 安装</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph-%E5%AE%89%E8%A3%85%E5%89%8D%E7%9A%84%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C/">ceph 安装前的准备工作</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/02/networkmanager%E9%85%8D%E7%BD%AE%E7%BD%91%E7%BB%9Cteam/">NetworkManager配置网络team</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/06/docker-registry-%E5%AD%98%E5%82%A8%E5%88%B0aliyun-oss/">Docker registry 存储到aliyun oss</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/06/docker-registry/">Docker registry</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2016/05/%E4%BD%BF%E7%94%A8letsencrypt/">使用letsencrypt</a></li>
+		</ul>
+	</div>
+</div>
+
+	
+<div class="widget-categories widget">
+	<h4 class="widget__title">Categories</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/ceph">Ceph</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/docker">Docker</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/java">Java</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/linux">Linux</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/macos">Macos</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/mysql">Mysql</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/oracle">Oracle</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/other">Other</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/postgresql">Postgresql</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/python">Python</a></li>
+		</ul>
+	</div>
+</div>
+	
+<div class="widget-taglist widget">
+	<h4 class="widget__title">Tags</h4>
+	<div class="widget__content">
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/aliyun-oss" title="aliyun-oss">aliyun-oss</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/array" title="array">array</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/backup" title="backup">backup</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/bond" title="bond">bond</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/ceph" title="ceph">ceph</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/comparision" title="comparision">comparision</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/composite-type" title="composite-type">composite-type</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/container" title="container">container</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/database" title="database">database</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/date" title="date">date</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/devicemapper" title="devicemapper">devicemapper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/dict" title="dict">dict</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/dml" title="dml">dml</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/dockerfile" title="dockerfile">dockerfile</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/driect-lvm" title="driect-lvm">driect-lvm</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/enum" title="enum">enum</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/etcd" title="etcd">etcd</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/failover" title="failover">failover</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/firewall" title="firewall">firewall</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/general-query" title="general-query">general-query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/generate_series" title="generate_series">generate_series</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/generate_subscripts" title="generate_subscripts">generate_subscripts</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/ha" title="ha">ha</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/image" title="image">image</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/inheritance" title="inheritance">inheritance</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/install" title="install">install</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/letsencrypt" title="letsencrypt">letsencrypt</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/log" title="log">log</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/logrotate" title="logrotate">logrotate</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/lvm" title="lvm">lvm</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/maven" title="maven">maven</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/mysql-config-editor" title="mysql-config-editor">mysql-config-editor</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/native" title="native">native</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/network" title="network">network</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/nmcli" title="nmcli">nmcli</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/partial-index" title="partial-index">partial-index</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/partition" title="partition">partition</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/partition-table" title="partition-table">partition-table</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/pg_dump" title="pg_dump">pg_dump</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/pgadmin" title="pgadmin">pgadmin</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/pip" title="pip">pip</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/pitr" title="pitr">pitr</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/postgres" title="postgres">postgres</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/postgresql.conf" title="postgresql.conf">postgresql.conf</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/query" title="query">query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/registry" title="registry">registry</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/restore" title="restore">restore</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/role" title="role">role</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/rsync" title="rsync">rsync</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/samba" title="samba">samba</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/schema" title="schema">schema</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/serial" title="serial">serial</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/slow-query" title="slow-query">slow-query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/sqldeveloper" title="sqldeveloper">sqldeveloper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/ssh" title="ssh">ssh</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/standby" title="standby">standby</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/storage-driver" title="storage-driver">storage-driver</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/storage-drivers" title="storage-drivers">storage-drivers</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/streaming-replication" title="streaming-replication">streaming-replication</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/string" title="string">string</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/table" title="table">table</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/tablespace" title="tablespace">tablespace</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/team" title="team">team</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/teamdctl" title="teamdctl">teamdctl</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/time" title="time">time</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/timestamp" title="timestamp">timestamp</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/tls" title="tls">tls</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/tomcat" title="tomcat">tomcat</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/transaction-isolation" title="transaction-isolation">transaction-isolation</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/upgrade" title="upgrade">upgrade</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/user" title="user">user</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/virtualenvwrapper" title="virtualenvwrapper">virtualenvwrapper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/volumns" title="volumns">volumns</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/wal" title="wal">wal</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/xfsdump" title="xfsdump">xfsdump</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/xfsrestore" title="xfsrestore">xfsrestore</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/%e6%95%b0%e5%ad%a6%e5%87%bd%e6%95%b0" title="数学函数">数学函数</a>
+	</div>
+</div>
+</aside>
+	</div>
+		<footer class="footer" itemscope="itemscope" itemtype="http://schema.org/WPFooter">
+			<div class="container container-inner">
+				<p class="footer__copyright">&copy; 2017 河马的池塘. Based on <a href="//wordpress.org/themes/mh-magazine-lite/" target="_blank" rel="nofollow noopener noreferrer">MH Magazine lite</a>.</p>
+			</div>
+		</footer>
+	</div>
+
+<script>
+	var navigation = responsiveNav(".menu", {
+		navClass: "menu--collapse",
+	});
+</script>
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-92973579-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+</body>
+</html>

@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>http://pool.idyi.net/2017/05/xfs%E5%A4%87%E4%BB%BD%E6%81%A2%E5%A4%8D/</loc>
+    <lastmod>2017-05-24T13:53:12+08:00</lastmod>
+  </url>
   
   <url>
     <loc>http://pool.idyi.net/2017/05/samba-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</loc>
@@ -573,7 +579,7 @@
   
   <url>
     <loc>http://pool.idyi.net/categories/linux/</loc>
-    <lastmod>2017-05-19T15:14:11+08:00</lastmod>
+    <lastmod>2017-05-24T13:53:12+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -711,7 +717,7 @@
   
   <url>
     <loc>http://pool.idyi.net/post/</loc>
-    <lastmod>2017-05-19T15:14:11+08:00</lastmod>
+    <lastmod>2017-05-24T13:53:12+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -908,6 +914,18 @@
   </url>
   
   <url>
+    <loc>http://pool.idyi.net/tags/xfsdump/</loc>
+    <lastmod>2017-05-24T13:53:12+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://pool.idyi.net/tags/xfsrestore/</loc>
+    <lastmod>2017-05-24T13:53:12+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>http://pool.idyi.net/tags/%E6%95%B0%E5%AD%A6%E5%87%BD%E6%95%B0/</loc>
     <lastmod>2015-02-25T18:18:24+08:00</lastmod>
     <priority>0</priority>
@@ -915,7 +933,7 @@
   
   <url>
     <loc>http://pool.idyi.net/</loc>
-    <lastmod>2017-05-19T15:14:11+08:00</lastmod>
+    <lastmod>2017-05-24T13:53:12+08:00</lastmod>
     <priority>0</priority>
   </url>
   
