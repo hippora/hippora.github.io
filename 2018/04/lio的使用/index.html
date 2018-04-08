@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LIO的使用</title>
+<meta name="description" content="河马的笔记">
+<meta name="generator" content="Hugo 0.37.1" />
+<meta property="og:title" content="LIO的使用" />
+<meta property="og:description" content="LIO的使用
+
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://pool.idyi.net/2018/04/lio%E7%9A%84%E4%BD%BF%E7%94%A8/" />
+
+
+
+<meta property="article:published_time" content="2018-04-08T14:21:11&#43;08:00"/>
+
+<meta property="article:modified_time" content="2018-04-08T14:21:11&#43;08:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<link rel="dns-prefetch" href="//fonts.googleapis.com" />
+<link rel="dns-prefetch" href="//fonts.gstatic.com" />
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700" type="text/css" media="all" />
+<link rel="stylesheet" href="http://pool.idyi.net/css/style.css" type="text/css" media="all" />
+<script type="text/javascript" src="http://pool.idyi.net/js/scripts.js"></script>
+<link rel="shortcut icon" href="http://pool.idyi.net/favicon.ico">
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-92973579-1', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+</head>
+<body class="body body-right-sidebar mobile" itemscope="itemscope" itemtype="http://schema.org/WebPage">
+	<div class="container container-outer">
+		<header class="header" itemscope="itemscope" itemtype="http://schema.org/WPHeader">
+			<div class="container container-inner clearfix">
+				<div class="logo" role="banner" itemscope="itemscope" itemtype="http://schema.org/Brand">
+					<a class="logo__link" href="http://pool.idyi.net/" title="河马的池塘" rel="home">
+						<h1 class="logo__title">河马的池塘</h1>
+						<h2 class="logo__tagline">一些技术笔记</h2>
+					</a>
+				</div>
+			</div>
+			
+<nav class="menu" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<ul class="menu__list">
+		<li class="menu__item"><a class="menu__link" href="http://pool.idyi.net/about">ABOUT ME</a></li>
+	</ul>
+</nav>
+
+		</header>
+		<div class="wrapper clearfix">
+
+<main class="main-content content" role="main" itemprop="mainContentOfPage">
+	<article class="post">
+		<header class="post__header clearfix">
+			<h1 class="post__title">LIO的使用</h1>
+			<p class="post__meta meta">
+				<svg class="icon icon-time" height="14" viewBox="0 0 16 16" width="14" xmlns="http://www.w3.org/2000/svg"><path d="m8-.0000003c-4.4 0-8 3.6-8 8 0 4.4000003 3.6 8.0000003 8 8.0000003 4.4 0 8-3.6 8-8.0000003 0-4.4-3.6-8-8-8zm0 14.4000003c-3.52 0-6.4-2.88-6.4-6.4000003 0-3.52 2.88-6.4 6.4-6.4 3.52 0 6.4 2.88 6.4 6.4 0 3.5200003-2.88 6.4000003-6.4 6.4000003zm.4-10.4000003h-1.2v4.8l4.16 2.5600003.64-1.04-3.6-2.1600003z"/></svg>
+				<time class="post__meta-date" datetime="2018-04-08T14:21:11">April 08, 2018</time>
+				<span class="post__meta-categories meta-categories">
+					<svg class="icon icon-category" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m7 2l1 2h8v11h-16v-13z"/></svg>
+					<a class="meta-categories__link" href="http://pool.idyi.net/categories/linux" rel="category">linux</a></span>
+			</p>
+		</header>
+		<div class="post__content clearfix">
+			<p>LIO的使用</p>
+
+<p></p>
+
+<h3 id="创建block">创建block</h3>
+
+<pre><code>[root@store05 ~]# targetcli 
+/&gt; cd /backstores/block 
+/backstores/block&gt; create xen-ha /dev/rbd0 
+Created block storage object xen-ha using /dev/rbd0.
+/backstores/block&gt; create xen-repo /dev/rbd1   
+Created block storage object xen-repo using /dev/rbd1.
+/backstores/block&gt; ls
+</code></pre>
+
+<blockquote>
+<p>tab键有代码提示</p>
+</blockquote>
+
+<h3 id="创建iscsi目标">创建iscsi目标</h3>
+
+<pre><code>/backstores/block&gt; cd /iscsi 
+/iscsi&gt; create 
+Created target iqn.2003-01.org.linux-iscsi.store05.x8664:sn.20853701f8ce.
+Created TPG 1.
+Global pref auto_add_default_portal=true
+Created default portal listening on all IPs (0.0.0.0), port 3260.
+/iscsi&gt; ls 
+...
+</code></pre>
+
+<h3 id="创建lun">创建lun</h3>
+
+<pre><code>/iscsi&gt; cd iqn.2003-01.org.linux-iscsi.store05.x8664:sn.20853701f8ce/tpg1/luns     
+/iscsi/iqn.20...8ce/tpg1/luns&gt; create /backstores/block/xen-ha 
+Created LUN 0.
+/iscsi/iqn.20...8ce/tpg1/luns&gt; create /backstores/block/xen-repo 
+Created LUN 1.
+</code></pre>
+
+<h3 id="创建portal">创建portal</h3>
+
+<p>相当于监听在哪个网卡上。默认已经监听在所有网卡上了。修改的话需要先删除掉0.0.0.0</p>
+
+<pre><code>/iscsi/iqn.20...8ce/tpg1/luns&gt; cd ../portals/
+/iscsi/iqn.20.../tpg1/portals&gt; delete ip_address=0.0.0.0 ip_port=3260 
+Deleted network portal 0.0.0.0:3260
+/iscsi/iqn.20.../tpg1/portals&gt; create 192.168.220.105 
+Using default IP port 3260
+Created network portal 192.168.220.105:3260.
+/iscsi/iqn.20.../tpg1/portals&gt; ls
+o- portals ............................................................................................................ [Portals: 1]
+  o- 192.168.220.105:3260 ..................................................................................................... [OK]
+</code></pre>
+
+<h3 id="设置访问权限">设置访问权限</h3>
+
+<pre><code>/iscsi/iqn.20...8ce/tpg1/luns&gt; cd ..
+/iscsi/iqn.20...3701f8ce/tpg1&gt; set attribute demo_mode_write_protect=0 generate_node_acls=1 cache_dynamic_acls=1
+Parameter demo_mode_write_protect is now '0'.
+Parameter generate_node_acls is now '1'.
+Parameter cache_dynamic_acls is now '1'.
+</code></pre>
+
+<p>//END</p>
+		</div>
+		
+<div class="post__tags tags clearfix">
+	<svg class="icon icon-tag" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="m4.73135 3.3795002q0-.5597-.39604-.9557-.39604-.3961-.95577-.3961-.55974 0-.95578.3961-.39604.396-.39604.9557 0 .5598.39604.9558.39604.3961.95578.3961.55973 0 .95577-.3961.39604-.396.39604-.9558zm11.26865 6.0832q0 .5596998-.39076.9504998l-5.18548 5.196q-.41188.3908-.9610504.3908-.55974 0-.9505-.3908l-7.5511496-7.5616998q-.40132-.3907-.68119-1.0666-.27987-.6759-.27987-1.2357v-4.3934q0-.54920004.40132-.95050004.40132-.4013.9505-.4013h4.39339q.55974 0 1.23565.2799.67591.2798 1.07723.6812l7.55115 7.54060004q.39076.4118.39076.961z"/></svg>
+	<ul class="tags__list">
+		<li class="tags__item"><a class="tags__link" href="http://pool.idyi.net/tags/lio/" rel="tag">lio</a></li>
+	</ul>
+</div>
+
+	</article>
+	
+<div class="authorbox clearfix">
+	<figure class="authorbox__avatar">
+		<img alt="Hippo avatar" src="http://pool.idyi.net/img/avatar.jpg" class="avatar" height="90" width="90">
+	</figure>
+	<div class="authorbox__header">
+		<span class="authorbox__name">About Hippo</span>
+	</div>
+	<div class="authorbox__description">
+		Hippo&#39;s true identity is unknown. Maybe he is a successful blogger or writer. Nobody knows it.
+	</div>
+</div>
+	
+<nav class="post-nav row clearfix" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<div class="post-nav__item post-nav__item--prev col-1-2">
+		<a class="post-nav__link" href="http://pool.idyi.net/2018/04/centos7%E9%85%8D%E7%BD%AEnfs4/" rel="prev"><span class="post-nav__caption">«Previous</span><p class="post-nav__post-title">centos7配置nfs4</p></a>
+	</div>
+</nav>
+
+	
+<div class="comments">
+	<div id="disqus_thread"></div>
+<script>
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "hippool" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+</main>
+
+<aside class="sidebar" itemscope="itemscope" itemtype="http://schema.org/WPSideBar">
+	
+<div class="widget-search widget">
+	<form class="widget-search__form" role="search" method="get" action="//google.com/search">
+		<label>
+			<span class="screen-reader-text">Search for:</span>
+			<input class="widget-search__field" type="search" placeholder="SEARCH..." value="" name="q">
+		</label>
+		<input class="widget-search__submit" type="submit" value="Search">
+		<input type="hidden" name="sitesearch" value="http://pool.idyi.net/" />
+	</form>
+</div>
+	
+<div class="widget-recent widget">
+	<h4 class="widget__title">Recent Posts</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2018/04/lio%E7%9A%84%E4%BD%BF%E7%94%A8/">LIO的使用</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2018/04/centos7%E9%85%8D%E7%BD%AEnfs4/">centos7配置nfs4</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/06/linux-autossh/">linux autossh</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/05/xfs%E5%A4%87%E4%BB%BD%E6%81%A2%E5%A4%8D/">xfs备份恢复</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/05/samba-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/">samba 安装配置</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/04/postgres-9.6%E5%AE%89%E8%A3%85/">postgres 9.6安装</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph%E5%AE%89%E8%A3%85%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98/">ceph安装中遇到的问题</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph-%E5%AE%89%E8%A3%85/">ceph 安装</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/03/ceph-%E5%AE%89%E8%A3%85%E5%89%8D%E7%9A%84%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C/">ceph 安装前的准备工作</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/2017/02/networkmanager%E9%85%8D%E7%BD%AE%E7%BD%91%E7%BB%9Cteam/">NetworkManager配置网络team</a></li>
+		</ul>
+	</div>
+</div>
+
+	
+<div class="widget-categories widget">
+	<h4 class="widget__title">Categories</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/ceph">Ceph</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/docker">Docker</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/java">Java</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/linux">Linux</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/macos">Macos</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/mysql">Mysql</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/oracle">Oracle</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/other">Other</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/postgresql">Postgresql</a></li>
+			<li class="widget__item"><a class="widget__link" href="http://pool.idyi.net/categories/python">Python</a></li>
+		</ul>
+	</div>
+</div>
+	
+
+	
+<div class="widget-taglist widget">
+	<h4 class="widget__title">Tags</h4>
+	<div class="widget__content">
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/aliyun-oss" title="aliyun-oss">aliyun-oss</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/array" title="array">array</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/autossh" title="autossh">autossh</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/backup" title="backup">backup</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/bond" title="bond">bond</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/ceph" title="ceph">ceph</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/comparision" title="comparision">comparision</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/composite-type" title="composite-type">composite-type</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/container" title="container">container</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/database" title="database">database</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/date" title="date">date</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/devicemapper" title="devicemapper">devicemapper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/dict" title="dict">dict</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/dml" title="dml">dml</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/dockerfile" title="dockerfile">dockerfile</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/driect-lvm" title="driect-lvm">driect-lvm</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/enum" title="enum">enum</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/etcd" title="etcd">etcd</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/failover" title="failover">failover</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/firewall" title="firewall">firewall</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/general-query" title="general-query">general-query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/generate_series" title="generate_series">generate_series</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/generate_subscripts" title="generate_subscripts">generate_subscripts</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/ha" title="ha">ha</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/image" title="image">image</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/inheritance" title="inheritance">inheritance</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/install" title="install">install</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/letsencrypt" title="letsencrypt">letsencrypt</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/lio" title="lio">lio</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/log" title="log">log</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/logrotate" title="logrotate">logrotate</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/lvm" title="lvm">lvm</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/maven" title="maven">maven</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/mysql-config-editor" title="mysql-config-editor">mysql-config-editor</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/native" title="native">native</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/network" title="network">network</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/nfs4" title="nfs4">nfs4</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/nmcli" title="nmcli">nmcli</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/partial-index" title="partial-index">partial-index</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/partition" title="partition">partition</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/partition-table" title="partition-table">partition-table</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/pg_dump" title="pg_dump">pg_dump</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/pgadmin" title="pgadmin">pgadmin</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/pip" title="pip">pip</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/pitr" title="pitr">pitr</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/postgres" title="postgres">postgres</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/postgresql.conf" title="postgresql.conf">postgresql.conf</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/query" title="query">query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/registry" title="registry">registry</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/restore" title="restore">restore</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/role" title="role">role</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/rsync" title="rsync">rsync</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/samba" title="samba">samba</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/schema" title="schema">schema</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/serial" title="serial">serial</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/slow-query" title="slow-query">slow-query</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/sqldeveloper" title="sqldeveloper">sqldeveloper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/ssh" title="ssh">ssh</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/standby" title="standby">standby</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/storage-driver" title="storage-driver">storage-driver</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/storage-drivers" title="storage-drivers">storage-drivers</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/streaming-replication" title="streaming-replication">streaming-replication</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/string" title="string">string</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/table" title="table">table</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/tablespace" title="tablespace">tablespace</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/team" title="team">team</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/teamdctl" title="teamdctl">teamdctl</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/time" title="time">time</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/timestamp" title="timestamp">timestamp</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/tls" title="tls">tls</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/tomcat" title="tomcat">tomcat</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/transaction-isolation" title="transaction-isolation">transaction-isolation</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/upgrade" title="upgrade">upgrade</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/user" title="user">user</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/virtualenvwrapper" title="virtualenvwrapper">virtualenvwrapper</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/volumns" title="volumns">volumns</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/wal" title="wal">wal</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/xfsdump" title="xfsdump">xfsdump</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/xfsrestore" title="xfsrestore">xfsrestore</a>
+		<a class="widget__link widget__link--taglist" href="http://pool.idyi.net/tags/%e6%95%b0%e5%ad%a6%e5%87%bd%e6%95%b0" title="数学函数">数学函数</a>
+	</div>
+</div>
+</aside>
+
+	</div>
+		<footer class="footer" itemscope="itemscope" itemtype="http://schema.org/WPFooter">
+			<div class="container container-inner">
+				<p class="footer__copyright">&copy; 2018 河马的池塘. <span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad theme</a>.</span></p>
+			</div>
+		</footer>
+	</div>
+
+<script>
+	var navigation = responsiveNav(".menu", {
+		navClass: "menu--collapse",
+	});
+</script>
+</body>
+</html>
