@@ -79,6 +79,28 @@
     </item>
     
     <item>
+      <title>ceph修改crush</title>
+      <link>http://pool.idyi.net/2017/03/ceph%E4%BF%AE%E6%94%B9crush/</link>
+      <pubDate>Wed, 29 Mar 2017 19:12:25 +0800</pubDate>
+      
+      <guid>http://pool.idyi.net/2017/03/ceph%E4%BF%AE%E6%94%B9crush/</guid>
+      <description>&lt;p&gt;修改crush图&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>ceph手动添加osd</title>
+      <link>http://pool.idyi.net/2017/03/ceph%E6%89%8B%E5%8A%A8%E6%B7%BB%E5%8A%A0osd/</link>
+      <pubDate>Wed, 29 Mar 2017 17:22:25 +0800</pubDate>
+      
+      <guid>http://pool.idyi.net/2017/03/ceph%E6%89%8B%E5%8A%A8%E6%B7%BB%E5%8A%A0osd/</guid>
+      <description>&lt;p&gt;ceph手动添加osd&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
       <title>ceph安装中遇到的问题</title>
       <link>http://pool.idyi.net/2017/03/ceph%E5%AE%89%E8%A3%85%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98/</link>
       <pubDate>Tue, 28 Mar 2017 18:05:51 +0800</pubDate>

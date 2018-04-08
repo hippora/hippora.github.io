@@ -33,6 +33,16 @@
   </url>
   
   <url>
+    <loc>http://pool.idyi.net/2017/03/ceph%E4%BF%AE%E6%94%B9crush/</loc>
+    <lastmod>2017-03-29T19:12:25+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://pool.idyi.net/2017/03/ceph%E6%89%8B%E5%8A%A8%E6%B7%BB%E5%8A%A0osd/</loc>
+    <lastmod>2017-03-29T17:22:25+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>http://pool.idyi.net/2017/03/ceph%E5%AE%89%E8%A3%85%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98/</loc>
     <lastmod>2017-03-28T18:05:51+08:00</lastmod>
   </url>
@@ -450,7 +460,7 @@
   
   <url>
     <loc>http://pool.idyi.net/categories/ceph/</loc>
-    <lastmod>2017-03-28T18:05:51+08:00</lastmod>
+    <lastmod>2017-03-29T19:12:25+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -469,6 +479,12 @@
   <url>
     <loc>http://pool.idyi.net/tags/container/</loc>
     <lastmod>2016-05-25T11:31:46+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://pool.idyi.net/tags/crush/</loc>
+    <lastmod>2017-03-29T19:12:25+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -679,6 +695,12 @@
   <url>
     <loc>http://pool.idyi.net/categories/oracle/</loc>
     <lastmod>2014-04-14T14:20:17+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://pool.idyi.net/tags/osd/</loc>
+    <lastmod>2017-03-29T17:22:25+08:00</lastmod>
     <priority>0</priority>
   </url>
   
