@@ -85,53 +85,42 @@ ga('send', 'pageview');
 
 <h1 id="安装">安装</h1>
 
-<pre><code class="language-shell"># yum install -y nfs-utils
+<pre><code># yum install -y nfs-utils
 # systemctl enable nfs-server
-# systemctl start nsf-server
+# systemctl start nfs-server
 </code></pre>
 
 <h1 id="配置">配置</h1>
 
-<pre><code class="language-shell"># vi /etc/exports
+<pre><code># vi /etc/exports
 /samba/public   *(rw,sync,no_subtree_check,all_squash,anonuid=99,anongid=99)
 
 # exportfs -rav #使配置立即生效
 </code></pre>
 
 <blockquote>
-<p>具体选项查看<code>man exports</code></p>
-
-<p>/samba/public 目录注意权限</p>
+<p>具体选项查看<code>man exports</code>
+/samba/public 目录注意权限</p>
 </blockquote>
 
 <h1 id="防火墙">防火墙</h1>
 
-<p>```sh el</p>
+<pre><code># firewall-cmd --permanent --add-service=nfs
+# firewall-cmd --permanent --add-service=mountd
+# firewall-cmd --permanent --add-service=rpc-bind
+# firewall-cmd --reload
+</code></pre>
 
-<h1 id="firewall-cmd-permanent-add-service-nfs">firewall-cmd &ndash;permanent &ndash;add-service=nfs</h1>
+<h1 id="客户端挂载">客户端挂载</h1>
 
-<h1 id="firewall-cmd-permanent-add-service-mountd">firewall-cmd &ndash;permanent &ndash;add-service=mountd</h1>
-
-<h1 id="firewall-cmd-permanent-add-service-rpc-bind">firewall-cmd &ndash;permanent &ndash;add-service=rpc-bind</h1>
-
-<h1 id="firewall-cmd-reload">firewall-cmd &ndash;reload</h1>
-
-<pre><code>
-
-
-# 客户端挂载
-
-
-
-```sh el
-# showmount -e 192.168.210.10
+<pre><code># showmount -e 192.168.210.10
 # mount -t nfs4 192.168.210.10:/samba/public /mnt
 # mount
 </code></pre>
 
 <p>开机启动就挂载就编辑/etc/fstab文件</p>
 
-<pre><code class="language-shell"># vi /etc/fstab
+<pre><code># vi /etc/fstab
 192.168.210.10:/samba/public   /mnt   nfs   defaults    0 0
 # mount -a
 </code></pre>
