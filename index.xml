@@ -79,6 +79,17 @@
     </item>
     
     <item>
+      <title>ceph中RBD使用</title>
+      <link>http://pool.idyi.net/2017/04/ceph%E4%B8%ADrbd%E4%BD%BF%E7%94%A8/</link>
+      <pubDate>Sat, 01 Apr 2017 09:12:25 +0800</pubDate>
+      
+      <guid>http://pool.idyi.net/2017/04/ceph%E4%B8%ADrbd%E4%BD%BF%E7%94%A8/</guid>
+      <description>&lt;p&gt;RBD使用&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
       <title>ceph修改crush</title>
       <link>http://pool.idyi.net/2017/03/ceph%E4%BF%AE%E6%94%B9crush/</link>
       <pubDate>Wed, 29 Mar 2017 19:12:25 +0800</pubDate>

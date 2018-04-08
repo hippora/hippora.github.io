@@ -33,6 +33,11 @@
   </url>
   
   <url>
+    <loc>http://pool.idyi.net/2017/04/ceph%E4%B8%ADrbd%E4%BD%BF%E7%94%A8/</loc>
+    <lastmod>2017-04-01T09:12:25+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>http://pool.idyi.net/2017/03/ceph%E4%BF%AE%E6%94%B9crush/</loc>
     <lastmod>2017-03-29T19:12:25+08:00</lastmod>
   </url>
@@ -460,7 +465,7 @@
   
   <url>
     <loc>http://pool.idyi.net/categories/ceph/</loc>
-    <lastmod>2017-03-29T19:12:25+08:00</lastmod>
+    <lastmod>2017-04-01T09:12:25+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -785,6 +790,12 @@
   <url>
     <loc>http://pool.idyi.net/tags/query/</loc>
     <lastmod>2015-02-24T17:37:26+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://pool.idyi.net/tags/rbd/</loc>
+    <lastmod>2017-04-01T09:12:25+08:00</lastmod>
     <priority>0</priority>
   </url>
   
