@@ -25,10 +25,20 @@
 
 
 <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+<link rel="dns-prefetch" href="//fonts.gstatic.com" />
 <link rel="alternate" type="application/rss+xml" title="河马的池塘 Feed" href="http://pool.idyi.net/tags/serial/index.xml">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700" type="text/css" media="all" />
 <link rel="stylesheet" href="http://pool.idyi.net/css/style.css" type="text/css" media="all" />
 <script type="text/javascript" src="http://pool.idyi.net/js/scripts.js"></script>
+<link rel="shortcut icon" href="http://pool.idyi.net/favicon.ico">
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-92973579-1', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
 </head>
 <body class="body body-right-sidebar mobile" itemscope="itemscope" itemtype="http://schema.org/WebPage">
 	<div class="container container-outer">
@@ -41,41 +51,43 @@
 					</a>
 				</div>
 			</div>
-			<nav class="menu" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+			
+<nav class="menu" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
 	<ul class="menu__list">
-		<li class="menu__item "><a class="menu__link" href="http://pool.idyi.net/about">ABOUT ME</a></li>
+		<li class="menu__item"><a class="menu__link" href="http://pool.idyi.net/about">ABOUT ME</a></li>
 	</ul>
 </nav>
+
 		</header>
 		<div class="wrapper clearfix">
 
-	<div class="main-content loop content" role="main">
+	<main class="main-content list content" role="main">
 		<header class="page-header">
 			<h1 class="page-header__title">Serial</h1>
+		</header><article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="list__header">
+			<h3 class="list__title post__title ">
+				<a href="http://pool.idyi.net/2015/03/postgresql%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%B9%8Bserial/" rel="bookmark">postgresql数据类型之Serial</a>
+			</h3>
+			<div class="list__meta meta">
+				<svg class="icon icon-time" height="14" viewBox="0 0 16 16" width="14" xmlns="http://www.w3.org/2000/svg"><path d="m8-.0000003c-4.4 0-8 3.6-8 8 0 4.4000003 3.6 8.0000003 8 8.0000003 4.4 0 8-3.6 8-8.0000003 0-4.4-3.6-8-8-8zm0 14.4000003c-3.52 0-6.4-2.88-6.4-6.4000003 0-3.52 2.88-6.4 6.4-6.4 3.52 0 6.4 2.88 6.4 6.4 0 3.5200003-2.88 6.4000003-6.4 6.4000003zm.4-10.4000003h-1.2v4.8l4.16 2.5600003.64-1.04-3.6-2.1600003z"/></svg>
+				<time class="list__meta-date" datetime="2015-03-09T10:15:59">March 09, 2015</time>
+			</div>
 		</header>
-		<article class="loop__item post clearfix">
-			<div class="loop__content clearfix">
-				<header class="loop__header">
-					<h3 class="loop__title post__title ">
-						<a href="http://pool.idyi.net/2015/03/postgresql%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%B9%8Bserial/" rel="bookmark">postgresql数据类型之Serial</a>
-					</h3>
-					<div class="loop__meta meta">
-						<svg class="icon icon-time" height="14" viewBox="0 0 16 16" width="14" xmlns="http://www.w3.org/2000/svg"><path d="m8-.0000003c-4.4 0-8 3.6-8 8 0 4.4000003 3.6 8.0000003 8 8.0000003 4.4 0 8-3.6 8-8.0000003 0-4.4-3.6-8-8-8zm0 14.4000003c-3.52 0-6.4-2.88-6.4-6.4000003 0-3.52 2.88-6.4 6.4-6.4 3.52 0 6.4 2.88 6.4 6.4 0 3.5200003-2.88 6.4000003-6.4 6.4000003zm.4-10.4000003h-1.2v4.8l4.16 2.5600003.64-1.04-3.6-2.1600003z"/></svg>
-						<time class="loop__meta-date" datetime="2015-03-09 10:15:59 &#43;0800 CST">March 09, 2015</time>
-					</div>
-				</header>
-				<div class="loop__excerpt">
-					<p>一般来说,每个表都需要一个主键,主键的值一般是通过数据库的auto_increment或者使用插入sequence来保证每条记录分配唯一的值.
+		<div class="list__excerpt">
+			<p>一般来说,每个表都需要一个主键,主键的值一般是通过数据库的auto_increment或者使用插入sequence来保证每条记录分配唯一的值.
 Oracle在12c中实现了表中序列的auto_increment,12c之前只能通过trigger来自己实现.
 PG中有个数据类型serial.</p>
 
 <p></p>
-				</div>
-			</div>
-		</article>
+		</div>
+	</div>
+</article>
+
 
 		
-	</div>
+	</main>
 
 <aside class="sidebar" itemscope="itemscope" itemtype="http://schema.org/WPSideBar">
 	
@@ -126,6 +138,8 @@ PG中有个数据类型serial.</p>
 		</ul>
 	</div>
 </div>
+	
+
 	
 <div class="widget-taglist widget">
 	<h4 class="widget__title">Tags</h4>
@@ -212,10 +226,11 @@ PG中有个数据类型serial.</p>
 	</div>
 </div>
 </aside>
+
 	</div>
 		<footer class="footer" itemscope="itemscope" itemtype="http://schema.org/WPFooter">
 			<div class="container container-inner">
-				<p class="footer__copyright">&copy; 2018 河马的池塘. Based on <a href="//wordpress.org/themes/mh-magazine-lite/" target="_blank" rel="nofollow noopener noreferrer">MH Magazine lite</a>.</p>
+				<p class="footer__copyright">&copy; 2018 河马的池塘. <span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad theme</a>.</span></p>
 			</div>
 		</footer>
 	</div>
@@ -225,16 +240,5 @@ PG中有个数据类型serial.</p>
 		navClass: "menu--collapse",
 	});
 </script>
-
-<script>
-(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-ga('create', 'UA-92973579-1', 'auto');
-ga('send', 'pageview');
-</script>
-
 </body>
 </html>
