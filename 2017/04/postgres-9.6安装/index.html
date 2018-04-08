@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>postgres 9.6安装</title>
 <meta name="description" content="河马的笔记">
-<meta name="generator" content="Hugo 0.24.1" />
+<meta name="generator" content="Hugo 0.37.1" />
 <meta property="og:title" content="postgres 9.6安装" />
 <meta property="og:description" content="使用yum安装
 
@@ -16,6 +16,7 @@
 
 
 <meta property="article:published_time" content="2017-04-29T22:35:00&#43;08:00"/>
+
 <meta property="article:modified_time" content="2017-04-29T22:35:00&#43;08:00"/>
 
 
@@ -165,20 +166,25 @@ Apr 29 23:11:10 srv00 systemd[1]: Started PostgreSQL 9.6 database server.
 	
 <div class="comments">
 	<div id="disqus_thread"></div>
-<script type="text/javascript">
-    var disqus_shortname = 'hippool';
-    var disqus_identifier = 'http:\/\/pool.idyi.net\/2017\/04\/postgres-9.6%E5%AE%89%E8%A3%85\/';
-    var disqus_title = 'postgres 9.6安装';
-    var disqus_url = 'http:\/\/pool.idyi.net\/2017\/04\/postgres-9.6%E5%AE%89%E8%A3%85\/';
-
+<script>
+    var disqus_config = function () {
+    
+    
+    
+    };
     (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "hippool" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
     })();
 </script>
-<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
 </div>
 
 </div>
@@ -320,7 +326,7 @@ Apr 29 23:11:10 srv00 systemd[1]: Started PostgreSQL 9.6 database server.
 	</div>
 		<footer class="footer" itemscope="itemscope" itemtype="http://schema.org/WPFooter">
 			<div class="container container-inner">
-				<p class="footer__copyright">&copy; 2017 河马的池塘. Based on <a href="//wordpress.org/themes/mh-magazine-lite/" target="_blank" rel="nofollow noopener noreferrer">MH Magazine lite</a>.</p>
+				<p class="footer__copyright">&copy; 2018 河马的池塘. Based on <a href="//wordpress.org/themes/mh-magazine-lite/" target="_blank" rel="nofollow noopener noreferrer">MH Magazine lite</a>.</p>
 			</div>
 		</footer>
 	</div>
