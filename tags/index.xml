@@ -501,7 +501,7 @@
     <item>
       <title>Rsync</title>
       <link>http://pool.idyi.net/tags/rsync/</link>
-      <pubDate>Thu, 30 Jul 2015 10:19:21 +0800</pubDate>
+      <pubDate>Mon, 30 Jul 2018 10:19:21 +0800</pubDate>
       
       <guid>http://pool.idyi.net/tags/rsync/</guid>
       <description></description>
@@ -531,6 +531,15 @@
       <pubDate>Mon, 09 Mar 2015 10:15:59 +0800</pubDate>
       
       <guid>http://pool.idyi.net/tags/serial/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Sersync</title>
+      <link>http://pool.idyi.net/tags/sersync/</link>
+      <pubDate>Mon, 30 Jul 2018 10:19:21 +0800</pubDate>
+      
+      <guid>http://pool.idyi.net/tags/sersync/</guid>
       <description></description>
     </item>
     

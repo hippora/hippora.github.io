@@ -7,10 +7,21 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>cn-zh</language>
     <copyright>Copyright (c) 2014-2017, Hippo; all rights reserved.</copyright>
-    <lastBuildDate>Sun, 08 Apr 2018 14:21:11 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 30 Jul 2018 10:19:21 +0800</lastBuildDate>
     
 	<atom:link href="http://pool.idyi.net/categories/linux/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>rsync&#43;sersync配置</title>
+      <link>http://pool.idyi.net/2018/07/rsync-sersync%E9%85%8D%E7%BD%AE/</link>
+      <pubDate>Mon, 30 Jul 2018 10:19:21 +0800</pubDate>
+      
+      <guid>http://pool.idyi.net/2018/07/rsync-sersync%E9%85%8D%E7%BD%AE/</guid>
+      <description>&lt;p&gt;正好需要用到rsync+sersync.记录一下基本同步配置&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>LIO的使用</title>
@@ -130,17 +141,6 @@ team呢也在慢慢替换老的bond了.&lt;/p&gt;
       
       <guid>http://pool.idyi.net/2015/08/firewalld%E5%B1%8F%E8%94%BDip/</guid>
       <description>&lt;p&gt;firewalld屏蔽ip&lt;/p&gt;
-
-&lt;p&gt;&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>rsync配置</title>
-      <link>http://pool.idyi.net/2015/07/rsync%E9%85%8D%E7%BD%AE/</link>
-      <pubDate>Thu, 30 Jul 2015 10:19:21 +0800</pubDate>
-      
-      <guid>http://pool.idyi.net/2015/07/rsync%E9%85%8D%E7%BD%AE/</guid>
-      <description>&lt;p&gt;正好需要用到rsync.记录一下基本同步配置&lt;/p&gt;
 
 &lt;p&gt;&lt;/p&gt;</description>
     </item>
